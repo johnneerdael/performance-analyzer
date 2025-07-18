@@ -1,16 +1,16 @@
 // Report Generator Service Implementation
-import { 
-  ReportGenerator, 
-  AnalysisResults, 
-  BandwidthMetrics, 
-  LatencyMetrics, 
-  ReliabilityMetrics, 
+import {
+  ReportGenerator,
+  AnalysisResults,
+  BandwidthMetrics,
+  LatencyMetrics,
+  ReliabilityMetrics,
   CpuMetrics,
   DnsPerformanceMetrics,
   DomainPerformance,
   ConfigurationRanking,
-  PerformanceAnomaly
-} from '../models';
+  PerformanceAnomaly,
+} from "../models";
 
 /**
  * Default implementation of the ReportGenerator interface
@@ -31,13 +31,13 @@ export class DefaultReportGenerator implements ReportGenerator {
         this.generateDetailedTables(analysis),
         this.createVisualizationDescriptions(analysis),
         this.generateAnomaliesSection(analysis),
-        this.generateRecommendationsSection(analysis)
+        this.generateRecommendationsSection(analysis),
       ];
 
-      return reportParts.join('\n\n');
+      return reportParts.join("\n\n");
     } catch (error: any) {
-      console.error('Error generating report:', error);
-      const errorMessage = error.message || 'Unknown error';
+      console.error("Error generating report:", error);
+      const errorMessage = error.message || "Unknown error";
       throw new Error(`Failed to generate report: ${errorMessage}`);
     }
   }
@@ -48,14 +48,14 @@ export class DefaultReportGenerator implements ReportGenerator {
    * @returns The header as a markdown string
    */
   private generateReportHeader(analysis: AnalysisResults): string {
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString().split("T")[0];
     return [
-      '# Network Performance Analysis Report',
-      '',
+      "# Network Performance Analysis Report",
+      "",
       `**Date:** ${date}`,
       `**Datasets Analyzed:** ${analysis.summary.totalDatasets}`,
-      ''
-    ].join('\n');
+      "",
+    ].join("\n");
   }
 
   /**
@@ -65,35 +65,37 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   createExecutiveSummary(analysis: AnalysisResults): string {
     const { summary } = analysis;
-    
+
     const executiveSummary = [
-      '## Executive Summary',
-      '',
-      'This report presents a comprehensive analysis of network performance across different configurations, focusing on bandwidth, latency, reliability, and DNS resolution performance.',
-      '',
-      '### Key Findings',
-      ''
+      "## Executive Summary",
+      "",
+      "This report presents a comprehensive analysis of network performance across different configurations, focusing on bandwidth, latency, reliability, and DNS resolution performance.",
+      "",
+      "### Key Findings",
+      "",
     ];
 
     // Add key findings as bullet points
-    summary.keyFindings.forEach(finding => {
+    summary.keyFindings.forEach((finding) => {
       executiveSummary.push(`- ${finding}`);
     });
-    
-    executiveSummary.push('');
-    executiveSummary.push('### Optimal Configuration');
-    executiveSummary.push('');
-    executiveSummary.push(`Based on the analysis, the **${summary.optimalConfiguration}** configuration provides the best overall performance.`);
-    executiveSummary.push('');
-    
+
+    executiveSummary.push("");
+    executiveSummary.push("### Optimal Configuration");
+    executiveSummary.push("");
+    executiveSummary.push(
+      `Based on the analysis, the **${summary.optimalConfiguration}** configuration provides the best overall performance.`
+    );
+    executiveSummary.push("");
+
     // Add performance highlights
-    executiveSummary.push('### Performance Highlights');
-    executiveSummary.push('');
-    summary.performanceHighlights.forEach(highlight => {
+    executiveSummary.push("### Performance Highlights");
+    executiveSummary.push("");
+    summary.performanceHighlights.forEach((highlight) => {
       executiveSummary.push(`- ${highlight}`);
     });
 
-    return executiveSummary.join('\n');
+    return executiveSummary.join("\n");
   }
 
   /**
@@ -104,26 +106,32 @@ export class DefaultReportGenerator implements ReportGenerator {
   private generateConfigurationOverview(analysis: AnalysisResults): string {
     const { configurationComparison } = analysis;
     const { overallRanking } = configurationComparison;
-    
+
     const overview = [
-      '## Configuration Overview',
-      '',
-      'The following configurations were analyzed and ranked based on overall performance:',
-      '',
-      '| Rank | Configuration | Overall Score | Bandwidth Score | Latency Score | Reliability Score |',
-      '|------|--------------|--------------|----------------|--------------|------------------|'
+      "## Configuration Overview",
+      "",
+      "The following configurations were analyzed and ranked based on overall performance:",
+      "",
+      "| Rank | Configuration | Overall Score | Bandwidth Score | Latency Score | Reliability Score |",
+      "|------|--------------|--------------|----------------|--------------|------------------|",
     ];
 
     // Sort configurations by rank
     const sortedConfigs = [...overallRanking].sort((a, b) => a.rank - b.rank);
-    
-    sortedConfigs.forEach(config => {
+
+    sortedConfigs.forEach((config) => {
       overview.push(
-        `| ${config.rank} | ${config.configuration} | ${config.overallScore.toFixed(2)} | ${config.bandwidthScore.toFixed(2)} | ${config.latencyScore.toFixed(2)} | ${config.reliabilityScore.toFixed(2)} |`
+        `| ${config.rank} | ${
+          config.configuration
+        } | ${config.overallScore.toFixed(2)} | ${config.bandwidthScore.toFixed(
+          2
+        )} | ${config.latencyScore.toFixed(
+          2
+        )} | ${config.reliabilityScore.toFixed(2)} |`
       );
     });
 
-    return overview.join('\n');
+    return overview.join("\n");
   }
 
   /**
@@ -133,22 +141,24 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   generateDetailedTables(analysis: AnalysisResults): string {
     const sections = [
-      '## Detailed Performance Analysis',
-      '',
+      "## Detailed Performance Analysis",
+      "",
       this.generateBandwidthTable(analysis.iperfAnalysis.bandwidthComparison),
-      '',
+      "",
       this.generateLatencyTable(analysis.iperfAnalysis.latencyAnalysis),
-      '',
+      "",
       this.generateReliabilityTable(analysis.iperfAnalysis.reliabilityMetrics),
-      '',
-      this.generateCpuUtilizationTable(analysis.iperfAnalysis.cpuUtilizationAnalysis),
-      '',
+      "",
+      this.generateCpuUtilizationTable(
+        analysis.iperfAnalysis.cpuUtilizationAnalysis
+      ),
+      "",
       this.generateDnsPerformanceTable(analysis.dnsAnalysis.performanceMetrics),
-      '',
-      this.generateDomainRankingTable(analysis.dnsAnalysis.domainRankings)
+      "",
+      this.generateDomainRankingTable(analysis.dnsAnalysis.domainRankings),
     ];
 
-    return sections.join('\n');
+    return sections.join("\n");
   }
 
   /**
@@ -158,21 +168,33 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateBandwidthTable(metrics: BandwidthMetrics[]): string {
     const table = [
-      '### Bandwidth Performance',
-      '',
-      'The following table shows bandwidth performance metrics across different configurations:',
-      '',
-      '| Configuration | Avg (Mbps) | Median (Mbps) | Max (Mbps) | Min (Mbps) | Std Dev | 95th % | 99th % |',
-      '|--------------|------------|---------------|------------|------------|---------|--------|--------|'
+      "### Bandwidth Performance",
+      "",
+      "The following table shows bandwidth performance metrics across different configurations:",
+      "",
+      "| Configuration | Avg (Mbps) | Median (Mbps) | Max (Mbps) | Min (Mbps) | Std Dev | 95th % | 99th % |",
+      "|--------------|------------|---------------|------------|------------|---------|--------|--------|",
     ];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       table.push(
-        `| ${metric.configuration} | ${metric.avgBandwidthMbps.toFixed(2)} | ${metric.medianBandwidthMbps.toFixed(2)} | ${metric.maxBandwidthMbps.toFixed(2)} | ${metric.minBandwidthMbps.toFixed(2)} | ${metric.standardDeviation.toFixed(2)} | ${metric.percentile95.toFixed(2)} | ${metric.percentile99.toFixed(2)} |`
+        `| ${metric.configuration} | ${metric.avgBandwidthMbps.toFixed(
+          2
+        )} | ${metric.medianBandwidthMbps.toFixed(
+          2
+        )} | ${metric.maxBandwidthMbps.toFixed(
+          2
+        )} | ${metric.minBandwidthMbps.toFixed(
+          2
+        )} | ${metric.standardDeviation.toFixed(
+          2
+        )} | ${metric.percentile95.toFixed(2)} | ${metric.percentile99.toFixed(
+          2
+        )} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -182,21 +204,27 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateLatencyTable(metrics: LatencyMetrics[]): string {
     const table = [
-      '### Latency Performance',
-      '',
-      'The following table shows latency performance metrics across different configurations:',
-      '',
-      '| Configuration | Avg (ms) | Median (ms) | Max (ms) | Min (ms) | Jitter (ms) |',
-      '|--------------|----------|-------------|----------|----------|-------------|'
+      "### Latency Performance",
+      "",
+      "The following table shows latency performance metrics across different configurations:",
+      "",
+      "| Configuration | Avg (ms) | Median (ms) | Max (ms) | Min (ms) | Jitter (ms) |",
+      "|--------------|----------|-------------|----------|----------|-------------|",
     ];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       table.push(
-        `| ${metric.configuration} | ${metric.avgLatencyMs.toFixed(2)} | ${metric.medianLatencyMs.toFixed(2)} | ${metric.maxLatencyMs.toFixed(2)} | ${metric.minLatencyMs.toFixed(2)} | ${metric.jitterMs.toFixed(2)} |`
+        `| ${metric.configuration} | ${metric.avgLatencyMs.toFixed(
+          2
+        )} | ${metric.medianLatencyMs.toFixed(
+          2
+        )} | ${metric.maxLatencyMs.toFixed(2)} | ${metric.minLatencyMs.toFixed(
+          2
+        )} | ${metric.jitterMs.toFixed(2)} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -206,21 +234,25 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateReliabilityTable(metrics: ReliabilityMetrics[]): string {
     const table = [
-      '### Reliability Metrics',
-      '',
-      'The following table shows reliability metrics across different configurations:',
-      '',
-      '| Configuration | Success Rate (%) | Retransmit Rate (%) | Packet Loss (%) | Error Count |',
-      '|--------------|------------------|---------------------|-----------------|-------------|'
+      "### Reliability Metrics",
+      "",
+      "The following table shows reliability metrics across different configurations:",
+      "",
+      "| Configuration | Success Rate (%) | Retransmit Rate (%) | Packet Loss (%) | Error Count |",
+      "|--------------|------------------|---------------------|-----------------|-------------|",
     ];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       table.push(
-        `| ${metric.configuration} | ${(metric.successRate * 100).toFixed(2)} | ${(metric.retransmitRate * 100).toFixed(2)} | ${(metric.packetLossRate * 100).toFixed(2)} | ${metric.errorCount} |`
+        `| ${metric.configuration} | ${(metric.successRate * 100).toFixed(
+          2
+        )} | ${(metric.retransmitRate * 100).toFixed(2)} | ${(
+          metric.packetLossRate * 100
+        ).toFixed(2)} | ${metric.errorCount} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -230,21 +262,25 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateCpuUtilizationTable(metrics: CpuMetrics[]): string {
     const table = [
-      '### CPU Utilization',
-      '',
-      'The following table shows CPU utilization metrics across different configurations:',
-      '',
-      '| Configuration | Avg Host CPU (%) | Avg Remote CPU (%) | Max Host CPU (%) | Max Remote CPU (%) |',
-      '|--------------|------------------|-------------------|------------------|-------------------|'
+      "### CPU Utilization",
+      "",
+      "The following table shows CPU utilization metrics across different configurations:",
+      "",
+      "| Configuration | Avg Host CPU (%) | Avg Remote CPU (%) | Max Host CPU (%) | Max Remote CPU (%) |",
+      "|--------------|------------------|-------------------|------------------|-------------------|",
     ];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       table.push(
-        `| ${metric.configuration} | ${(metric.avgHostCpuUsage * 100).toFixed(2)} | ${(metric.avgRemoteCpuUsage * 100).toFixed(2)} | ${(metric.maxHostCpuUsage * 100).toFixed(2)} | ${(metric.maxRemoteCpuUsage * 100).toFixed(2)} |`
+        `| ${metric.configuration} | ${(metric.avgHostCpuUsage * 100).toFixed(
+          2
+        )} | ${(metric.avgRemoteCpuUsage * 100).toFixed(2)} | ${(
+          metric.maxHostCpuUsage * 100
+        ).toFixed(2)} | ${(metric.maxRemoteCpuUsage * 100).toFixed(2)} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -252,23 +288,29 @@ export class DefaultReportGenerator implements ReportGenerator {
    * @param metrics The DNS performance metrics to tabulate
    * @returns The DNS performance table as a markdown string
    */
-  private generateDnsPerformanceTable(metrics: DnsPerformanceMetrics[]): string {
+  private generateDnsPerformanceTable(
+    metrics: DnsPerformanceMetrics[]
+  ): string {
     const table = [
-      '### DNS Performance',
-      '',
-      'The following table shows DNS performance metrics across different configurations:',
-      '',
-      '| Configuration | Avg Response Time (ms) | Median Response Time (ms) | Success Rate (%) |',
-      '|--------------|------------------------|---------------------------|------------------|'
+      "### DNS Performance",
+      "",
+      "The following table shows DNS performance metrics across different configurations:",
+      "",
+      "| Configuration | Avg Response Time (ms) | Median Response Time (ms) | Success Rate (%) |",
+      "|--------------|------------------------|---------------------------|------------------|",
     ];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       table.push(
-        `| ${metric.configuration} | ${metric.avgResponseTimeMs.toFixed(2)} | ${metric.medianResponseTimeMs.toFixed(2)} | ${(metric.successRate * 100).toFixed(2)} |`
+        `| ${metric.configuration} | ${metric.avgResponseTimeMs.toFixed(
+          2
+        )} | ${metric.medianResponseTimeMs.toFixed(2)} | ${(
+          metric.successRate * 100
+        ).toFixed(2)} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -281,23 +323,25 @@ export class DefaultReportGenerator implements ReportGenerator {
     const slowestDomains = [...domains]
       .sort((a, b) => b.avgResponseTimeMs - a.avgResponseTimeMs)
       .slice(0, 10);
-    
+
     const table = [
-      '### Slowest DNS Domains',
-      '',
-      'The following table shows the 10 slowest domains by average response time:',
-      '',
-      '| Domain | Avg Response Time (ms) | Success Rate (%) | Query Count |',
-      '|--------|------------------------|------------------|-------------|'
+      "### Slowest DNS Domains",
+      "",
+      "The following table shows the 10 slowest domains by average response time:",
+      "",
+      "| Domain | Avg Response Time (ms) | Success Rate (%) | Query Count |",
+      "|--------|------------------------|------------------|-------------|",
     ];
 
-    slowestDomains.forEach(domain => {
+    slowestDomains.forEach((domain) => {
       table.push(
-        `| ${domain.domain} | ${domain.avgResponseTimeMs.toFixed(2)} | ${(domain.successRate * 100).toFixed(2)} | ${domain.queryCount} |`
+        `| ${domain.domain} | ${domain.avgResponseTimeMs.toFixed(2)} | ${(
+          domain.successRate * 100
+        ).toFixed(2)} | ${domain.queryCount} |`
       );
     });
 
-    return table.join('\n');
+    return table.join("\n");
   }
 
   /**
@@ -307,24 +351,24 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   createVisualizationDescriptions(analysis: AnalysisResults): string {
     const { iperfAnalysis, dnsAnalysis, configurationComparison } = analysis;
-    
+
     const descriptions = [
-      '## Performance Visualization Analysis',
-      '',
-      '### Bandwidth Comparison',
-      '',
+      "## Performance Visualization Analysis",
+      "",
+      "### Bandwidth Comparison",
+      "",
       this.describeBandwidthVisualization(iperfAnalysis.bandwidthComparison),
-      '',
-      '### MTU Impact Analysis',
-      '',
+      "",
+      "### MTU Impact Analysis",
+      "",
       this.describeMtuImpact(configurationComparison.mtuImpact),
-      '',
-      '### DNS Performance Patterns',
-      '',
-      this.describeDnsPerformance(dnsAnalysis.performanceMetrics)
+      "",
+      "### DNS Performance Patterns",
+      "",
+      this.describeDnsPerformance(dnsAnalysis.performanceMetrics),
     ];
 
-    return descriptions.join('\n');
+    return descriptions.join("\n");
   }
 
   /**
@@ -334,26 +378,44 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private describeBandwidthVisualization(metrics: BandwidthMetrics[]): string {
     if (!metrics || metrics.length === 0) {
-      return 'No bandwidth data available for visualization.';
+      return "No bandwidth data available for visualization.";
     }
-    
+
     // Sort configurations by average bandwidth
-    const sortedByBandwidth = [...metrics].sort((a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps);
+    const sortedByBandwidth = [...metrics].sort(
+      (a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps
+    );
     const bestConfig = sortedByBandwidth[0];
     const worstConfig = sortedByBandwidth[sortedByBandwidth.length - 1];
-    
+
     if (!bestConfig || !worstConfig) {
-      return 'Insufficient bandwidth data for comparison.';
+      return "Insufficient bandwidth data for comparison.";
     }
-    
-    const bandwidthDifference = bestConfig.avgBandwidthMbps - worstConfig.avgBandwidthMbps;
-    const percentageDifference = (bandwidthDifference / worstConfig.avgBandwidthMbps) * 100;
-    
+
+    const bandwidthDifference =
+      bestConfig.avgBandwidthMbps - worstConfig.avgBandwidthMbps;
+    const percentageDifference =
+      (bandwidthDifference / worstConfig.avgBandwidthMbps) * 100;
+
     return [
-      `The bandwidth comparison chart shows that the **${bestConfig.configuration}** configuration achieves the highest average bandwidth at **${bestConfig.avgBandwidthMbps.toFixed(2)} Mbps**. This is **${percentageDifference.toFixed(2)}%** higher than the lowest performing configuration (**${worstConfig.configuration}** at **${worstConfig.avgBandwidthMbps.toFixed(2)} Mbps**).`,
-      '',
-      `The 95th percentile bandwidth for the best configuration is **${bestConfig.percentile95.toFixed(2)} Mbps**, indicating consistent high performance. The standard deviation of **${bestConfig.standardDeviation.toFixed(2)}** suggests ${bestConfig.standardDeviation < 5 ? 'stable' : 'variable'} performance across test runs.`
-    ].join('\n');
+      `The bandwidth comparison chart shows that the **${
+        bestConfig.configuration
+      }** configuration achieves the highest average bandwidth at **${bestConfig.avgBandwidthMbps.toFixed(
+        2
+      )} Mbps**. This is **${percentageDifference.toFixed(
+        2
+      )}%** higher than the lowest performing configuration (**${
+        worstConfig.configuration
+      }** at **${worstConfig.avgBandwidthMbps.toFixed(2)} Mbps**).`,
+      "",
+      `The 95th percentile bandwidth for the best configuration is **${bestConfig.percentile95.toFixed(
+        2
+      )} Mbps**, indicating consistent high performance. The standard deviation of **${bestConfig.standardDeviation.toFixed(
+        2
+      )}** suggests ${
+        bestConfig.standardDeviation < 5 ? "stable" : "variable"
+      } performance across test runs.`,
+    ].join("\n");
   }
 
   /**
@@ -363,60 +425,79 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private describeMtuImpact(mtuAnalysis: any): string {
     if (!mtuAnalysis) {
-      return 'No MTU analysis data available.';
+      return "No MTU analysis data available.";
     }
-    
+
     const { optimalMtu, performanceByMtu, recommendations } = mtuAnalysis;
-    
+
     if (!performanceByMtu || Object.keys(performanceByMtu).length === 0) {
-      return `MTU analysis shows that ${optimalMtu || 'N/A'} is the recommended MTU size, but detailed performance data is not available.`;
+      return `MTU analysis shows that ${
+        optimalMtu || "N/A"
+      } is the recommended MTU size, but detailed performance data is not available.`;
     }
-    
+
     // Get MTU sizes and sort them
-    const mtuSizes = Object.keys(performanceByMtu).map(Number).sort((a, b) => a - b);
-    
+    const mtuSizes = Object.keys(performanceByMtu)
+      .map(Number)
+      .sort((a, b) => a - b);
+
     let description = [
       `Analysis of different MTU sizes shows that **${optimalMtu}** provides the optimal balance of performance metrics. `,
-      ''
+      "",
     ];
 
     // Add comparison between different MTU sizes
     if (mtuSizes.length > 1) {
       const comparisons = [];
-      
+
       for (let i = 0; i < mtuSizes.length - 1; i++) {
         const currentMtu = mtuSizes[i];
         const nextMtu = mtuSizes[i + 1];
-        
-        if (typeof currentMtu === 'number' && typeof nextMtu === 'number' && 
-            performanceByMtu[currentMtu] && performanceByMtu[nextMtu]) {
-          
+
+        if (
+          typeof currentMtu === "number" &&
+          typeof nextMtu === "number" &&
+          performanceByMtu[currentMtu] &&
+          performanceByMtu[nextMtu]
+        ) {
           const currentPerf = performanceByMtu[currentMtu];
           const nextPerf = performanceByMtu[nextMtu];
-          
-          const bandwidthDiff = ((nextPerf.avgBandwidth - currentPerf.avgBandwidth) / currentPerf.avgBandwidth) * 100;
-          const latencyDiff = ((nextPerf.avgLatency - currentPerf.avgLatency) / currentPerf.avgLatency) * 100;
-          
-          comparisons.push(`Increasing MTU from **${currentMtu}** to **${nextMtu}** resulted in a **${bandwidthDiff.toFixed(2)}%** change in bandwidth and a **${latencyDiff.toFixed(2)}%** change in latency.`);
+
+          const bandwidthDiff =
+            ((nextPerf.avgBandwidth - currentPerf.avgBandwidth) /
+              currentPerf.avgBandwidth) *
+            100;
+          const latencyDiff =
+            ((nextPerf.avgLatency - currentPerf.avgLatency) /
+              currentPerf.avgLatency) *
+            100;
+
+          comparisons.push(
+            `Increasing MTU from **${currentMtu}** to **${nextMtu}** resulted in a **${bandwidthDiff.toFixed(
+              2
+            )}%** change in bandwidth and a **${latencyDiff.toFixed(
+              2
+            )}%** change in latency.`
+          );
         }
       }
-      
+
       if (comparisons.length > 0) {
         description = description.concat(comparisons);
-        description.push('');
+        description.push("");
       }
     }
 
     // Add recommendations
     if (recommendations && recommendations.length > 0) {
-      description.push('**Recommendations based on MTU analysis:**');
-      description.push('');
+      description.push("**Recommendations based on MTU analysis:**");
+      description.push("");
       recommendations.forEach((rec: string) => {
         description.push(`- ${rec}`);
       });
     }
 
-    return description.join('\n');
+    return description.join("\n");
   }
 
   /**
@@ -426,28 +507,44 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private describeDnsPerformance(metrics: DnsPerformanceMetrics[]): string {
     if (!metrics || metrics.length === 0) {
-      return 'No DNS performance data available for analysis.';
+      return "No DNS performance data available for analysis.";
     }
-    
+
     // Sort configurations by average response time
-    const sortedByResponseTime = [...metrics].sort((a, b) => a.avgResponseTimeMs - b.avgResponseTimeMs);
+    const sortedByResponseTime = [...metrics].sort(
+      (a, b) => a.avgResponseTimeMs - b.avgResponseTimeMs
+    );
     const bestConfig = sortedByResponseTime[0];
     const worstConfig = sortedByResponseTime[sortedByResponseTime.length - 1];
-    
+
     if (!bestConfig || !worstConfig) {
-      return 'Insufficient DNS performance data for comparison.';
+      return "Insufficient DNS performance data for comparison.";
     }
-    
-    const timeDifference = worstConfig.avgResponseTimeMs - bestConfig.avgResponseTimeMs;
-    const percentageDifference = (timeDifference / bestConfig.avgResponseTimeMs) * 100;
-    
+
+    const timeDifference =
+      worstConfig.avgResponseTimeMs - bestConfig.avgResponseTimeMs;
+    const percentageDifference =
+      (timeDifference / bestConfig.avgResponseTimeMs) * 100;
+
     return [
-      `DNS performance analysis shows that the **${bestConfig.configuration}** configuration achieves the fastest average response time at **${bestConfig.avgResponseTimeMs.toFixed(2)} ms**. This is **${percentageDifference.toFixed(2)}%** faster than the slowest configuration (**${worstConfig.configuration}** at **${worstConfig.avgResponseTimeMs.toFixed(2)} ms**).`,
-      '',
-      `The success rate for DNS queries ranges from **${(bestConfig.successRate * 100).toFixed(2)}%** to **${(worstConfig.successRate * 100).toFixed(2)}%** across configurations.`,
-      '',
-      `Analysis of the slowest domains reveals patterns that may indicate network configuration issues or DNS server performance limitations. The slowest domains consistently show higher response times across all configurations.`
-    ].join('\n');
+      `DNS performance analysis shows that the **${
+        bestConfig.configuration
+      }** configuration achieves the fastest average response time at **${bestConfig.avgResponseTimeMs.toFixed(
+        2
+      )} ms**. This is **${percentageDifference.toFixed(
+        2
+      )}%** faster than the slowest configuration (**${
+        worstConfig.configuration
+      }** at **${worstConfig.avgResponseTimeMs.toFixed(2)} ms**).`,
+      "",
+      `The success rate for DNS queries ranges from **${(
+        bestConfig.successRate * 100
+      ).toFixed(2)}%** to **${(worstConfig.successRate * 100).toFixed(
+        2
+      )}%** across configurations.`,
+      "",
+      `Analysis of the slowest domains reveals patterns that may indicate network configuration issues or DNS server performance limitations. The slowest domains consistently show higher response times across all configurations.`,
+    ].join("\n");
   }
 
   /**
@@ -457,48 +554,48 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateAnomaliesSection(analysis: AnalysisResults): string {
     const { anomalies } = analysis;
-    
+
     if (!anomalies || anomalies.length === 0) {
-      return '## Performance Anomalies\n\nNo significant performance anomalies were detected in the analyzed datasets.';
+      return "## Performance Anomalies\n\nNo significant performance anomalies were detected in the analyzed datasets.";
     }
-    
+
     const section = [
-      '## Performance Anomalies',
-      '',
-      'The following performance anomalies were detected during analysis:',
-      ''
+      "## Performance Anomalies",
+      "",
+      "The following performance anomalies were detected during analysis:",
+      "",
     ];
 
     // Group anomalies by severity
-    const highSeverity = anomalies.filter(a => a.severity === 'high');
-    const mediumSeverity = anomalies.filter(a => a.severity === 'medium');
-    const lowSeverity = anomalies.filter(a => a.severity === 'low');
-    
+    const highSeverity = anomalies.filter((a) => a.severity === "high");
+    const mediumSeverity = anomalies.filter((a) => a.severity === "medium");
+    const lowSeverity = anomalies.filter((a) => a.severity === "low");
+
     if (highSeverity.length > 0) {
-      section.push('### High Severity Anomalies');
-      section.push('');
-      highSeverity.forEach(anomaly => {
-        section.push(this.formatAnomalyEntry(anomaly));
-      });
-    }
-    
-    if (mediumSeverity.length > 0) {
-      section.push('### Medium Severity Anomalies');
-      section.push('');
-      mediumSeverity.forEach(anomaly => {
-        section.push(this.formatAnomalyEntry(anomaly));
-      });
-    }
-    
-    if (lowSeverity.length > 0) {
-      section.push('### Low Severity Anomalies');
-      section.push('');
-      lowSeverity.forEach(anomaly => {
+      section.push("### High Severity Anomalies");
+      section.push("");
+      highSeverity.forEach((anomaly) => {
         section.push(this.formatAnomalyEntry(anomaly));
       });
     }
 
-    return section.join('\n');
+    if (mediumSeverity.length > 0) {
+      section.push("### Medium Severity Anomalies");
+      section.push("");
+      mediumSeverity.forEach((anomaly) => {
+        section.push(this.formatAnomalyEntry(anomaly));
+      });
+    }
+
+    if (lowSeverity.length > 0) {
+      section.push("### Low Severity Anomalies");
+      section.push("");
+      lowSeverity.forEach((anomaly) => {
+        section.push(this.formatAnomalyEntry(anomaly));
+      });
+    }
+
+    return section.join("\n");
   }
 
   /**
@@ -509,25 +606,25 @@ export class DefaultReportGenerator implements ReportGenerator {
   private formatAnomalyEntry(anomaly: PerformanceAnomaly): string {
     const entry = [
       `#### ${anomaly.type.toUpperCase()} Anomaly in ${anomaly.configuration}`,
-      '',
+      "",
       `**Description:** ${anomaly.description}`,
-      '',
-      '**Affected Metrics:**'
+      "",
+      "**Affected Metrics:**",
     ];
-    
-    anomaly.affectedMetrics.forEach(metric => {
+
+    anomaly.affectedMetrics.forEach((metric) => {
       entry.push(`- ${metric}`);
     });
-    
-    entry.push('');
-    entry.push('**Recommendations:**');
-    
-    anomaly.recommendations.forEach(rec => {
+
+    entry.push("");
+    entry.push("**Recommendations:**");
+
+    anomaly.recommendations.forEach((rec) => {
       entry.push(`- ${rec}`);
     });
-    
-    entry.push('');
-    return entry.join('\n');
+
+    entry.push("");
+    return entry.join("\n");
   }
 
   /**
@@ -537,19 +634,19 @@ export class DefaultReportGenerator implements ReportGenerator {
    */
   private generateRecommendationsSection(analysis: AnalysisResults): string {
     const { summary } = analysis;
-    
+
     const section = [
-      '## Recommendations',
-      '',
-      'Based on the comprehensive analysis of network performance across configurations, the following recommendations are provided:'
+      "## Recommendations",
+      "",
+      "Based on the comprehensive analysis of network performance across configurations, the following recommendations are provided:",
     ];
 
     // Add recommendations as bullet points
-    summary.recommendations.forEach(recommendation => {
+    summary.recommendations.forEach((recommendation) => {
       section.push(`- ${recommendation}`);
     });
-    
-    return section.join('\n');
+
+    return section.join("\n");
   }
 }
 

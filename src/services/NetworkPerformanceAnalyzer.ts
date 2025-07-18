@@ -1132,37 +1132,60 @@ export function createNetworkPerformanceAnalyzer(
 
   // Merge provided config with loaded config
   configManager.update({
-    ...(config.continueOnError !== undefined || 
-       config.logProgress !== undefined || 
-       config.useParallelProcessing !== undefined || 
-       config.maxParallelTasks !== undefined || 
-       config.enablePerformanceMonitoring !== undefined || 
-       config.memoryThresholdPercent !== undefined 
+    ...(config.continueOnError !== undefined ||
+    config.logProgress !== undefined ||
+    config.useParallelProcessing !== undefined ||
+    config.maxParallelTasks !== undefined ||
+    config.enablePerformanceMonitoring !== undefined ||
+    config.memoryThresholdPercent !== undefined
       ? {
           analysis: {
-            ...(config.continueOnError !== undefined ? { continueOnError: config.continueOnError } : {}),
-            ...(config.logProgress !== undefined ? { logProgress: config.logProgress } : {}),
-            ...(config.useParallelProcessing !== undefined ? { useParallelProcessing: config.useParallelProcessing } : {}),
-            ...(config.maxParallelTasks !== undefined ? { maxParallelTasks: config.maxParallelTasks } : {}),
-            ...(config.enablePerformanceMonitoring !== undefined ? { enablePerformanceMonitoring: config.enablePerformanceMonitoring } : {}),
-            ...(config.memoryThresholdPercent !== undefined ? { memoryThresholdPercent: config.memoryThresholdPercent } : {})
-          }
-        } 
+            ...(config.continueOnError !== undefined
+              ? { continueOnError: config.continueOnError }
+              : {}),
+            ...(config.logProgress !== undefined
+              ? { logProgress: config.logProgress }
+              : {}),
+            ...(config.useParallelProcessing !== undefined
+              ? { useParallelProcessing: config.useParallelProcessing }
+              : {}),
+            ...(config.maxParallelTasks !== undefined
+              ? { maxParallelTasks: config.maxParallelTasks }
+              : {}),
+            ...(config.enablePerformanceMonitoring !== undefined
+              ? {
+                  enablePerformanceMonitoring:
+                    config.enablePerformanceMonitoring,
+                }
+              : {}),
+            ...(config.memoryThresholdPercent !== undefined
+              ? { memoryThresholdPercent: config.memoryThresholdPercent }
+              : {}),
+          },
+        }
       : {}),
     ...(config.anomalyThresholds
-      ? { anomalyThresholds: { ...config.anomalyThresholds } }
+      ? { 
+          anomalyThresholds: Object.fromEntries(
+            Object.entries(config.anomalyThresholds).filter(([_, value]) => value !== undefined)
+          )
+        }
       : {}),
-    reporting: {
-      ...(config.reportOutputPath
-        ? {
-            outputDirectory: path.dirname(config.reportOutputPath),
-            defaultFilename: path.basename(config.reportOutputPath),
-          }
-        : {}),
-      ...(config.includeSections
-        ? { includeSections: config.includeSections }
-        : {}),
-    },
+    ...(config.reportOutputPath || config.includeSections
+      ? {
+          reporting: {
+            ...(config.reportOutputPath
+              ? {
+                  outputDirectory: path.dirname(config.reportOutputPath),
+                  defaultFilename: path.basename(config.reportOutputPath),
+                }
+              : {}),
+            ...(config.includeSections
+              ? { includeSections: config.includeSections }
+              : {}),
+          },
+        }
+      : {}),
   });
 
   // Get final analyzer config

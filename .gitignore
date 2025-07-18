@@ -1,5 +1,4 @@
-.kiro
-node_modules
-coredns*
-stock*
+.kiro 
+node_modules 
+datasets
 logs

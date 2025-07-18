@@ -1,0 +1,113 @@
+;;
+;; Domain:     thepi.es.
+;; Exported:   2025-07-16 16:08:21
+;;
+;; This file is intended for use for informational and archival
+;; purposes ONLY and MUST be edited before use on a production
+;; DNS server.  In particular, you must:
+;;   -- update the SOA record with the correct authoritative name server
+;;   -- update the SOA record with the contact e-mail address information
+;;   -- update the NS record(s) with the authoritative name servers for this domain.
+;;
+;; For further information, please consult the BIND documentation
+;; located on the following website:
+;;
+;; http://www.isc.org/
+;;
+;; And RFC 1035:
+;;
+;; http://www.ietf.org/rfc/rfc1035.txt
+;;
+;; Please note that we do NOT offer technical support for any use
+;; of this zone data, the BIND name server, or any other third-party
+;; DNS software.
+;;
+;; Use at your own risk.
+;; SOA Record
+thepi.es	3600	IN	SOA	angela.ns.cloudflare.com. dns.cloudflare.com. 2050434870 10000 2400 604800 3600
+
+;; NS Records
+thepi.es.	86400	IN	NS	angela.ns.cloudflare.com.
+thepi.es.	86400	IN	NS	hunts.ns.cloudflare.com.
+
+;; A Records
+comics.thepi.es.	1	IN	A	192.168.51.43 ; cf_tags=cf-proxied:false
+dockge1.thepi.es.	1	IN	A	192.168.51.42 ; cf_tags=cf-proxied:false
+dockge2.thepi.es.	1	IN	A	192.168.51.41 ; cf_tags=cf-proxied:false
+faker.thepi.es.	1	IN	A	3.70.255.109 ; cf_tags=cf-proxied:false
+flowise.thepi.es.	1	IN	A	192.168.51.44 ; cf_tags=cf-proxied:false
+n8n.thepi.es.	1	IN	A	192.168.51.40 ; cf_tags=cf-proxied:false
+
+;; AAAA Records
+aaaa.thepi.es.	1	IN	AAAA	2001:db8::1 ; cf_tags=cf-proxied:false
+
+;; CNAME Records
+aitranslator.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+asus.thepi.es.	1	IN	CNAME	piehouse.tplinkdns.com. ; cf_tags=cf-proxied:false
+audiobookrequest.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+audiobookshelf.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+boardgameroom.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+cameras.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+cloud.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+comet.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+data-admin.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+data.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+downloader.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+drop.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+esphome.thepi.es.	1	IN	CNAME	697a3b55-e912-40b3-b365-5afd1cb24c06.cfargotunnel.com. ; cf_tags=cf-proxied:false
+files.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+flaresolverr.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+ha.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+jackettio.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+jackett.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+livingroom.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+mdm.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+mediaflow.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+mediafusion.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+monitor.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+mosquitto.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+nas.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+nodered.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:true
+obico.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+okta.thepi.es.	1	IN	CNAME	dev-17608370.customdomains.okta.com. ; cf_tags=cf-proxied:false
+passwords.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+pdf.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+pgadmin.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+plex.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+pomodoro.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+pong.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+portainer-nas.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+portainer-proxmox.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+prowlarr.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+proxmox1.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+proxmox2.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+proxmox3.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+repo.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+riven.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+router.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+stremio-jackett.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+stremthru.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+torrentio.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+url.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+warp.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+zerotier1.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+zerotier2.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+zigbee2mqtt.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+zilean.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+zurg.thepi.es.	1	IN	CNAME	asus.thepi.es. ; cf_tags=cf-proxied:false
+
+;; MX Records
+thepi.es.	1	IN	MX	10 alt4.aspmx.l.google.com.
+thepi.es.	1	IN	MX	10 alt3.aspmx.l.google.com.
+thepi.es.	1	IN	MX	5 alt2.aspmx.l.google.com.
+thepi.es.	1	IN	MX	5 alt1.aspmx.l.google.com.
+thepi.es.	1	IN	MX	1 aspmx.l.google.com.
+
+;; TXT Records
+_acme-challenge.okta.thepi.es.	1	IN	TXT	"AEfYF6GegO8ldy5Ko7uzxQXImKslojjcZnjqFCoMPLA"
+_acme-challenge.thepi.es.	1	IN	TXT	"_dlwwhAItYDU_vBUcrFV4Nj2RhlsDmT9a2bICw_1NUw"
+_acme-challenge.www.thepi.es.	1	IN	TXT	"_w5TZMoMkr1P23HSw_GlUSCr2yRbFPH8Xx7Pb1QxiJ4"
+_dmarc.thepi.es.	1	IN	TXT	"v=DMARC1;  p=none; rua=mailto:96e5176c79b2409fbc83d8849ce80296@dmarc-reports.cloudflare.net"
+thepi.es.	1	IN	TXT	"v=spf1 include:_spf.google.com ~all"
+thepi.es.	1	IN	TXT	"v=spf1 include:_spf.google.com ~all"
+thepi.es.	1	IN	TXT	"google-site-verification=uwpjNv0-XG_CLvuU55AKRyOdlPjTg93Jl6L_Q7TFwpc"
