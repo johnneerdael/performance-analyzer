@@ -1,185 +1,187 @@
-# Network Performance Analyzer
+# 🚀 Network Performance Analyzer
 
-A comprehensive tool for analyzing network performance test datasets containing DNS testing results and iperf3 performance measurements. This tool automatically processes multiple test configurations with different parameters (MTU sizes, AWS logging settings) and generates detailed comparative reports in markdown format.
+<div align="center">
 
-## Features
+[![npm version](https://badge.fury.io/js/network-performance-analyzer.svg)](https://badge.fury.io/js/network-performance-analyzer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js CI](https://github.com/your-org/network-performance-analyzer/workflows/Node.js%20CI/badge.svg)](https://github.com/your-org/network-performance-analyzer/actions)
 
-- **Automated Dataset Discovery**: Automatically finds and processes network performance test datasets
-- **Comprehensive Analysis**: Analyzes iperf3 and DNS performance metrics across different configurations
-- **Configuration Comparison**: Compares performance across different MTU sizes and AWS logging settings
-- **Anomaly Detection**: Identifies performance outliers and unusual patterns
-- **Detailed Reporting**: Generates comprehensive markdown reports with insights and recommendations
-- **Plugin Architecture**: Extensible design allows adding custom analysis capabilities
-- **Performance Optimized**: Supports parallel processing and streaming for large datasets
+**A comprehensive toolkit for analyzing network performance in Netskope Private Access (NPA) environments**
 
-## Installation
+*Specialized for testing NPA performance with CGNAT validation and multi-configuration analysis*
+
+</div>
+
+---
+
+## 🎯 Purpose
+
+This toolkit is specifically designed for **Netskope Private Access (NPA) performance testing**. When NPA is properly configured and steered, it returns Carrier-Grade NAT (CGNAT) addresses from the `100.64.0.0/10` range as defined in RFC 6598. Our DNS validation ensures you're testing the correct NPA-steered traffic path.
+
+## ✨ Key Features
+
+| Feature | Description | Documentation |
+|---------|-------------|---------------|
+| 🔍 **Automated Dataset Discovery** | Finds and processes network performance test datasets | [User Guide](docs/user-guide.md) |
+| 📊 **Comprehensive Analysis** | Analyzes iperf3 and DNS performance across configurations | [API Documentation](docs/api.md) |
+| ⚖️ **Configuration Comparison** | Compares MTU sizes, AWS logging, and other parameters | [Configuration Guide](docs/configuration-reference.md) |
+| 🚨 **Anomaly Detection** | Identifies performance outliers and unusual patterns | [Extending Guide](docs/extending-the-analyzer.md) |
+| 📝 **Detailed Reporting** | Generates comprehensive markdown reports with insights | [User Guide](docs/user-guide.md) |
+| 🔌 **Plugin Architecture** | Extensible design for custom analysis capabilities | [Custom Plugins Guide](docs/custom-plugins-guide.md) |
+| ⚡ **Performance Optimized** | Parallel processing and streaming for large datasets | [Performance Guide](docs/extending-the-analyzer.md) |
+| 🌐 **CGNAT Validation** | Validates NPA traffic steering via CGNAT IP ranges | [DNS Testing Guide](docs/dns-testing-guide.md) |
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 14.x or higher
-- npm 6.x or higher
+| Requirement | Version | Installation |
+|-------------|---------|--------------|
+| 📦 **Node.js** | 14.x or higher | [Download](https://nodejs.org/) |
+| 📦 **npm** | 6.x or higher | Included with Node.js |
+| 🔧 **iperf3** | Latest | [Installation Guide](docs/data-gatherer-guide.md#installation-and-dependencies) |
+| 🔧 **dig** | Latest | [Installation Guide](docs/data-gatherer-guide.md#installation-and-dependencies) |
 
-### Install from npm
+### 📥 Installation Options
 
+#### Option 1: Install from npm (Recommended)
 ```bash
 npm install -g network-performance-analyzer
 ```
 
-### Install from source
-
+#### Option 2: Build from source
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/network-performance-analyzer.git
-
-# Navigate to the project directory
 cd network-performance-analyzer
 
-# Install dependencies
+# Install dependencies and build
 npm install
-
-# Build the project
 npm run build
 
 # Link for global usage
 npm link
 ```
 
-## Usage
+#### Option 3: Development setup
+```bash
+# Clone and setup for development
+git clone https://github.com/your-org/network-performance-analyzer.git
+cd network-performance-analyzer
 
-### Basic Usage
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Start development mode
+npm run dev
+```
+
+### ⚡ Getting Started in 3 Steps
+
+1. **📊 Collect Data** - Use our data gatherer tool:
+   ```bash
+   # Navigate to data gatherer
+   cd data-gatherer
+   
+   # Install Python dependencies
+   pip install -r requirements.txt
+   
+   # Run performance tests (requires iperf3 servers)
+   python3 network_performance_tester.py --servers 192.168.1.100
+   ```
+   📖 *See [Data Gatherer Guide](docs/data-gatherer-guide.md) for detailed instructions*
+
+2. **🔍 Analyze Results** - Process your datasets:
+   ```bash
+   # Analyze collected data
+   network-performance-analyzer ./datasets
+   ```
+
+3. **📈 Review Reports** - Check generated analysis:
+   ```bash
+   # View the generated report
+   cat network-analysis-report.md
+   ```
+
+## 💻 Usage
+
+### 🎯 Basic Analysis
+```bash
+# Analyze datasets in current directory
+network-performance-analyzer ./datasets
+
+# Specify custom output location
+network-performance-analyzer ./datasets -o ./reports/npa-analysis.md
+```
+
+### 🔧 Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-o, --output <file>` | Output file path | `-o ./reports/analysis.md` |
+| `-v, --verbose` | Enable detailed logging | `-v` |
+| `-c, --continue-on-error` | Continue on dataset failures | `-c` |
+| `-t, --anomaly-thresholds <json>` | Custom anomaly detection | `-t '{"bandwidthVariation":0.2}'` |
+| `-p, --parallel <number>` | Max parallel tasks | `-p 8` |
+| `-m, --monitor` | Enable performance monitoring | `-m` |
+| `-e, --environment <env>` | Environment configuration | `-e production` |
+| `-C, --config <file>` | Configuration file path | `-C ./config.json` |
+| `-P, --plugins <dirs>` | Plugin directories | `-P ./plugins,./custom` |
+| `-T, --template <id>` | Report template | `-T detailed` |
+| `-S, --sections <list>` | Report sections | `-S summary,recommendations` |
+
+### 🚀 Advanced Examples
 
 ```bash
-network-performance-analyzer <input-directory>
+# 🔍 Comprehensive analysis with custom settings
+network-performance-analyzer ./npa-datasets \
+  -o ./reports/npa-performance-$(date +%Y%m%d).md \
+  -v -m \
+  -t '{"bandwidthVariation":0.15,"dnsResponseTimeVariation":0.4}' \
+  -e production
+
+# 🔌 Using custom plugins for specialized analysis
+network-performance-analyzer ./datasets \
+  -P ./custom-plugins \
+  -T npa-optimized \
+  -S executive-summary,npa-validation,performance-comparison
+
+# ⚡ High-performance analysis for large datasets
+network-performance-analyzer ./large-datasets \
+  -p 16 \
+  -C ./configs/high-performance.json \
+  --continue-on-error
 ```
 
-This will analyze all datasets in the input directory and generate a report at `./network-analysis-report.md`.
+📖 **For more usage examples, see [Troubleshooting and Examples Guide](docs/troubleshooting-examples.md)**
 
-### Command Line Options
+## ⚙️ Configuration
 
-```
-Usage: network-performance-analyzer [options] <input-dir>
+The analyzer provides flexible configuration for different testing environments and requirements.
 
-Arguments:
-  input-dir                      Directory containing network performance test datasets
-
-Options:
-  -V, --version                  output the version number
-  -o, --output <file>            Output file path for the generated report (default: network-analysis-report.md)
-  -v, --verbose                  Enable verbose logging (default: false)
-  -c, --continue-on-error        Continue analysis when individual datasets fail (default: true)
-  -t, --anomaly-thresholds <json> Custom thresholds for anomaly detection as JSON string
-  -p, --parallel <number>        Maximum number of parallel tasks to run (default: "4")
-  -m, --monitor                  Enable performance monitoring (default: false)
-  -e, --environment <env>        Environment to use for configuration (development, production, testing)
-  -C, --config <file>            Path to configuration file
-  -P, --plugins <dirs>           Comma-separated list of plugin directories
-  -T, --template <id>            Report template ID to use
-  -S, --sections <list>          Comma-separated list of report sections to include
-  -h, --help                     display help for command
-```
-
-### Examples
-
+### 🔧 Quick Configuration
 ```bash
-# Basic analysis
-network-performance-analyzer ./test-datasets
+# Generate default configuration
+network-performance-analyzer --init-config
 
-# Specify output file
-network-performance-analyzer ./test-datasets -o ./reports/analysis.md
-
-# Enable verbose logging
-network-performance-analyzer ./test-datasets -v
-
-# Custom anomaly thresholds
-network-performance-analyzer ./test-datasets -t '{"bandwidthVariation":0.2,"latencyVariation":0.3}'
-
-# Use custom configuration file
-network-performance-analyzer ./test-datasets -C ./config.json -e production
-
-# Use custom plugins
-network-performance-analyzer ./test-datasets -P ./plugins,./custom-plugins
-
-# Customize report sections
-network-performance-analyzer ./test-datasets -T custom -S executive-summary,configuration-overview,recommendations
+# Use environment-specific settings
+network-performance-analyzer ./datasets -e production -C ./npa-config.json
 ```
 
-## Configuration
+### 📋 Configuration Categories
 
-The Network Performance Analyzer uses a flexible configuration system that allows you to customize various aspects of the analysis process.
+| Category | Purpose | Documentation |
+|----------|---------|---------------|
+| 🔍 **Analysis Settings** | Control processing behavior | [Configuration Reference](docs/configuration-reference.md) |
+| 🚨 **Anomaly Thresholds** | Customize detection sensitivity | [Configuration Reference](docs/configuration-reference.md) |
+| 📊 **Reporting Options** | Control report generation | [User Guide](docs/user-guide.md) |
+| 🔌 **Plugin Configuration** | Manage custom extensions | [Custom Plugins Guide](docs/custom-plugins-guide.md) |
+| 🌍 **Environment Profiles** | Environment-specific settings | [Configuration Reference](docs/configuration-reference.md) |
 
-### Configuration File Structure
-
-```json
-{
-  "analysis": {
-    "continueOnError": true,
-    "logProgress": true,
-    "useParallelProcessing": true,
-    "maxParallelTasks": 4,
-    "enablePerformanceMonitoring": false,
-    "memoryThresholdPercent": 80
-  },
-  "anomalyThresholds": {
-    "bandwidthVariation": 0.2,
-    "latencyVariation": 0.3,
-    "packetLossThreshold": 0.05,
-    "dnsResponseTimeVariation": 0.5,
-    "cpuUtilizationThreshold": 0.8
-  },
-  "reporting": {
-    "outputDirectory": "./reports",
-    "defaultFilename": "network-analysis-report.md",
-    "includeSections": [
-      "executive-summary",
-      "configuration-overview",
-      "detailed-tables",
-      "visualizations",
-      "anomalies",
-      "recommendations"
-    ],
-    "format": "markdown"
-  },
-  "plugins": {
-    "enabled": ["example-analyzer"],
-    "config": {
-      "example-analyzer": {
-        "bandwidthWeight": 0.4,
-        "latencyWeight": 0.4,
-        "packetLossWeight": 0.2
-      }
-    }
-  },
-  "environments": {
-    "development": {
-      "analysis": {
-        "logProgress": true,
-        "enablePerformanceMonitoring": true
-      }
-    },
-    "production": {
-      "analysis": {
-        "logProgress": false,
-        "enablePerformanceMonitoring": false
-      }
-    }
-  }
-}
-```
-
-### Creating and Loading Configuration
-
-You can create a default configuration file using the provided API:
-
-```typescript
-import { ConfigurationManager } from 'network-performance-analyzer';
-
-// Create default configuration file
-await ConfigurationManager.createDefaultConfig('./config.json');
-
-// Load configuration from file
-const configManager = new ConfigurationManager();
-configManager.loadFromFile('./config.json');
-```
+📖 **For complete configuration options, see [Configuration Reference](docs/configuration-reference.md)**
 
 ## Dataset Format
 
