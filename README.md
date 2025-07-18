@@ -183,66 +183,73 @@ network-performance-analyzer ./datasets -e production -C ./npa-config.json
 
 📖 **For complete configuration options, see [Configuration Reference](docs/configuration-reference.md)**
 
-## Dataset Format
+## 📁 Dataset Format & Structure
 
-The analyzer expects datasets in directories with the following naming pattern:
+### 🗂️ Directory Structure
+The analyzer expects datasets organized with specific naming patterns for NPA testing:
 
+```
+datasets/
+├── coredns-mtu1500-aws-logs_enabled/
+│   ├── parameters-results_20250717_120000.json
+│   └── results_20250717_120000.json
+├── coredns-mtu1420-aws-logs_disabled/
+│   ├── parameters-results_20250717_130000.json
+│   └── results_20250717_130000.json
+└── stock-mtu8920-aws-logs_disabled/
+    ├── parameters-results_20250717_140000.json
+    └── results_20250717_140000.json
+```
+
+### 📋 Naming Convention
 ```
 (coredns|stock)-mtu<size>-aws-logs_(enabled|disabled)
 ```
 
-Each dataset directory should contain:
+| Component | Description | Example |
+|-----------|-------------|---------|
+| `coredns\|stock` | DNS resolver type | `coredns`, `stock` |
+| `mtu<size>` | MTU configuration | `mtu1500`, `mtu1420`, `mtu8920` |
+| `aws-logs_(enabled\|disabled)` | AWS logging status | `aws-logs_enabled`, `aws-logs_disabled` |
 
-1. A parameters file named `parameters-results_*.json` (optional)
-2. A results file named `results_*.json` (required)
+### 📊 Data Files
 
-### Parameters File Format
-
+#### Parameters File (`parameters-results_*.json`)
 ```json
 {
-  "backendServer": "string",
+  "backendServer": "192.168.1.100",
   "mtu": 1500,
-  "queryLogging": "enabled|disabled",
-  "timestamp": "ISO date string"
+  "queryLogging": "enabled",
+  "timestamp": "2025-07-17T12:00:00Z"
 }
 ```
 
-### Results File Format
-
+#### Results File (`results_*.json`)
 ```json
 {
   "iperfTests": [
     {
-      "server": "string",
-      "scenario": "string",
+      "server": "192.168.1.100",
+      "scenario": "TCP Bandwidth (Parallel 4)",
       "success": true,
-      "startTime": 1626912345,
-      "endTime": 1626912355,
-      "duration": 10,
-      "numStreams": 1,
-      "cpuUtilizationHost": 12.5,
-      "cpuUtilizationRemote": 8.3,
-      "tcpMssDefault": 1460,
-      "retransmits": 0,
-      "sndCwnd": 43800,
-      "blksize": 131072,
-      "bytes": 1073741824,
-      "bitsPerSecond": 858993459.2,
-      "bandwidthMbps": 819.2
+      "bandwidthMbps": 945.2,
+      "retransmits": 12,
+      "duration": 15.1
     }
   ],
   "dnsResults": [
     {
-      "domain": "example.com",
+      "domain": "example.npa.com",
       "dnsServer": "8.8.8.8",
       "success": true,
-      "responseTimeMs": 12.5,
-      "queryTimeMs": 10.2,
-      "resolvedIps": ["93.184.216.34"]
+      "responseTimeMs": 23.4,
+      "resolvedIps": ["100.64.1.10"]
     }
   ]
 }
 ```
+
+📖 **For complete data format specifications, see [Data Gatherer Guide](docs/data-gatherer-guide.md#output-format-and-data-structure)**
 
 ## Extending the Analyzer
 
