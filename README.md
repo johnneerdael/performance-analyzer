@@ -4,7 +4,6 @@
 
 [![npm version](https://badge.fury.io/js/network-performance-analyzer.svg)](https://badge.fury.io/js/network-performance-analyzer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js CI](https://github.com/your-org/network-performance-analyzer/workflows/Node.js%20CI/badge.svg)](https://github.com/your-org/network-performance-analyzer/actions)
 
 **A comprehensive toolkit for analyzing network performance in Netskope Private Access (NPA) environments**
 
@@ -59,13 +58,7 @@ pip install -r requirements.txt
 
 ### 📥 Installation Options
 
-#### Option 1: Install from npm (Recommended)
-
-```bash
-npm install -g network-performance-analyzer
-```
-
-#### Option 2: Build from source
+#### Option 1: Build from source (Recommended)
 
 ```bash
 # Clone the repository
@@ -76,11 +69,11 @@ cd network-performance-analyzer
 npm install
 npm run build
 
-# Link for global usage
+# Link for global usage (makes 'network-performance-analyzer' command available)
 npm link
 ```
 
-#### Option 3: Development setup
+#### Option 2: Local development setup
 
 ```bash
 # Clone and setup for development
@@ -95,6 +88,24 @@ npm test
 
 # Start development mode
 npm run dev
+```
+
+#### Option 3: Direct usage without global install
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/network-performance-analyzer.git
+cd network-performance-analyzer
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Run directly with npx
+npx . ./datasets
+
+# Or run the built CLI directly
+node dist/cli.js ./datasets
 ```
 
 ### ⚡ Getting Started in 3 Steps

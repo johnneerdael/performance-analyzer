@@ -377,7 +377,7 @@ export class ReportTemplateManager {
         itemContent = itemContent.replace(/\{\{this\}\}/g, String(item));
         
         // Replace {{property}} with item properties
-        itemContent = itemContent.replace(/\{\{([^#\/][^}]*)\}\}/g, (propMatch, propKey) => {
+        itemContent = itemContent.replace(/\{\{([^#\/][^}]*)\}\}/g, (propMatch: string, propKey: string) => {
           const trimmedPropKey = propKey.trim();
           
           if (typeof item === 'object' && item !== null) {

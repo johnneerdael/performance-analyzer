@@ -312,7 +312,7 @@ export class ConfigurationManager {
    * @param section Section name
    * @returns The requested configuration section
    */
-  getSection<K extends keyof ConfigFile>(section: K): ConfigFile[K] {
+  getSection<K extends keyof ConfigFile>(section: K): ConfigFile[K] | undefined {
     return this.config[section] ? JSON.parse(JSON.stringify(this.config[section])) : undefined;
   }
   

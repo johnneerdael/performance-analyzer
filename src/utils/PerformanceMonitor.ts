@@ -396,7 +396,4 @@ export class PerformanceMonitor extends EventEmitter {
   }
 }
 
-// Add global garbage collection type for TypeScript
-declare global {
-  var gc: (() => void) | undefined;
-}
+// Use the existing Node.js gc type declaration

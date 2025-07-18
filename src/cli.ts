@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // Network Performance Analyzer - Command Line Interface
 import { Command } from 'commander';
 import path from 'path';

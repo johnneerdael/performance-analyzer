@@ -20,9 +20,10 @@ export interface ReportGenerator {
     createVisualizationDescriptions(analysis: AnalysisResults): string;
 }
 export interface ErrorHandler {
-    handleFileSystemError(error: FileSystemError): void;
-    handleParsingError(error: ParsingError): void;
-    handleAnalysisError(error: AnalysisError): void;
+    handleFileSystemError(error: FileSystemError): boolean;
+    handleParsingError(error: ParsingError): boolean;
+    handleAnalysisError(error: AnalysisError): boolean;
+    handleValidationError(error: Error, entityType: string, entityId: string): boolean;
     logError(error: Error, context: string): void;
 }
 export interface FileSystemError extends Error {
