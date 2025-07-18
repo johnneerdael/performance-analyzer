@@ -1,0 +1,1 @@
+{"version":3,"file":"DataParser.js","sourceRoot":"","sources":["../../../src/services/DataParser.ts"],"names":[],"mappings":";;;AAGA,MAAa,iBAAiB;IAC5B,KAAK,CAAC,eAAe,CAAC,QAAgB;QACpC,yCAAyC;QACzC,MAAM,IAAI,KAAK,CAAC,qBAAqB,CAAC,CAAC;IACzC,CAAC;IAED,KAAK,CAAC,YAAY,CAAC,QAAgB;QACjC,yCAAyC;QACzC,MAAM,IAAI,KAAK,CAAC,qBAAqB,CAAC,CAAC;IACzC,CAAC;CACF;AAVD,8CAUC"}
