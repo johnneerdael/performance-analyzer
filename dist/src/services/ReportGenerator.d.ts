@@ -4,6 +4,21 @@ import { ReportGenerator, AnalysisResults } from "../models";
  * Generates comprehensive markdown reports from analysis results
  */
 export declare class DefaultReportGenerator implements ReportGenerator {
+    protected datasetDisplayNames: Map<string, string>;
+    /**
+     * Set the dataset display name mapping
+     * @param datasets Array of datasets with name and displayName properties
+     */
+    setDatasetDisplayNames(datasets: {
+        name: string;
+        displayName?: string;
+    }[]): void;
+    /**
+     * Get the display name for a configuration
+     * @param configName The configuration name
+     * @returns The display name if available, otherwise the original name
+     */
+    protected getConfigurationDisplayName(configName: string): string;
     /**
      * Generate a complete markdown report from analysis results
      * @param analysis The analysis results to include in the report
@@ -33,6 +48,48 @@ export declare class DefaultReportGenerator implements ReportGenerator {
      * @param analysis The analysis results to tabulate
      * @returns The detailed tables as a markdown string
      */
+    /**
+     * Generate side-by-side comparison tables for better analysis
+     * @param analysis The analysis results
+     * @returns The comparison tables as a markdown string
+     */
+    generateComparisonTables(analysis: AnalysisResults): string;
+    /**
+     * Generate a DNS performance comparison table
+     * @param metrics The DNS performance metrics
+     * @returns The DNS comparison table as a markdown string
+     */
+    /**
+     * Prepare data for the template
+     * @param analysis The analysis results
+     * @returns The prepared data for the template
+     */
+    private prepareTemplateData;
+    private generateDnsComparisonTable;
+    /**
+     * Generate an MTU impact analysis table
+     * @param analysis The analysis results
+     * @returns The MTU impact table as a markdown string
+     */
+    private generateMtuImpactTable;
+    /**
+     * Generate a DNS server implementation comparison table
+     * @param analysis The analysis results
+     * @returns The DNS server comparison table as a markdown string
+     */
+    private generateDnsServerComparisonTable;
+    /**
+     * Generate a logging impact analysis table
+     * @param analysis The analysis results
+     * @returns The logging impact table as a markdown string
+     */
+    private generateLoggingImpactTable;
+    /**
+     * Generate an anomaly distribution table
+     * @param anomalies The performance anomalies
+     * @returns The anomaly distribution table as a markdown string
+     */
+    private generateAnomalyDistributionTable;
     generateDetailedTables(analysis: AnalysisResults): string;
     /**
      * Generate a table for bandwidth metrics

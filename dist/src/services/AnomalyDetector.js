@@ -65,7 +65,7 @@ class AnomalyDetector {
         datasets.forEach(dataset => {
             if (!dataset.results?.iperfTests)
                 return;
-            const configName = this.getConfigurationName(dataset);
+            const configName = this.getDescriptiveConfigName(dataset.name);
             if (!bandwidthByConfig[configName]) {
                 bandwidthByConfig[configName] = [];
             }
@@ -139,7 +139,7 @@ class AnomalyDetector {
         datasets.forEach(dataset => {
             if (!dataset.results?.iperfTests)
                 return;
-            const configName = this.getConfigurationName(dataset);
+            const configName = this.getDescriptiveConfigName(dataset.name);
             if (!jitterByConfig[configName]) {
                 jitterByConfig[configName] = [];
             }
@@ -214,7 +214,7 @@ class AnomalyDetector {
         datasets.forEach(dataset => {
             if (!dataset.results?.iperfTests)
                 return;
-            const configName = this.getConfigurationName(dataset);
+            const configName = this.getDescriptiveConfigName(dataset.name);
             if (!packetLossByConfig[configName]) {
                 packetLossByConfig[configName] = [];
             }
@@ -301,7 +301,7 @@ class AnomalyDetector {
         datasets.forEach(dataset => {
             if (!dataset.results?.dnsResults)
                 return;
-            const configName = this.getConfigurationName(dataset);
+            const configName = this.getDescriptiveConfigName(dataset.name);
             if (!responseTimesByConfig[configName]) {
                 responseTimesByConfig[configName] = [];
             }
@@ -388,7 +388,7 @@ class AnomalyDetector {
                 datasets.forEach(dataset => {
                     if (!dataset.results?.dnsResults)
                         return;
-                    const configName = this.getConfigurationName(dataset);
+                    const configName = this.getDescriptiveConfigName(dataset.name);
                     const hasDomain = dataset.results.dnsResults.some(test => test.domain === domain);
                     if (hasDomain) {
                         affectedConfigs.push(configName);
@@ -411,38 +411,35 @@ class AnomalyDetector {
         return anomalies;
     }
     /**
-     * Get a standardized configuration name from a dataset
-     * @param dataset The dataset to get the configuration name for
-     * @returns A standardized configuration name
+     * Generate a descriptive name for a configuration
+     * @param configName The configuration name
+     * @returns A descriptive name
      */
-    getConfigurationName(dataset) {
-        const { mtu, awsLogging, backendServer } = dataset.configuration;
-        const loggingStatus = awsLogging ? 'logs_enabled' : 'logs_disabled';
-        return `${backendServer}-mtu${mtu}-aws-${loggingStatus}`;
-    }
-    /**
-     * Calculate the mean of an array of numbers
-     * @param values Array of numbers
-     * @returns The mean value
-     */
-    calculateMean(values) {
-        if (values.length === 0)
-            return 0;
-        return values.reduce((sum, val) => sum + val, 0) / values.length;
-    }
-    /**
-     * Calculate the standard deviation of an array of numbers
-     * @param values Array of numbers
-     * @param mean Optional pre-calculated mean
-     * @returns The standard deviation
-     */
-    calculateStandardDeviation(values, mean) {
-        if (values.length <= 1)
-            return 0;
-        const avg = mean !== undefined ? mean : this.calculateMean(values);
-        const squareDiffs = values.map(value => Math.pow(value - avg, 2));
-        const variance = squareDiffs.reduce((sum, val) => sum + val, 0) / values.length;
-        return Math.sqrt(variance);
+    getDescriptiveConfigName(configName) {
+        // If the configuration name already has a descriptive format, return it
+        if (configName.includes('-mtu') && (configName.includes('-aws-logs_') || configName.includes('-logging_'))) {
+            return configName.replace('-aws-logs_', '-logging_');
+        }
+        // Otherwise, try to extract components from the name
+        const parts = configName.split('-');
+        const serverType = parts[0] || 'unknown';
+        // Look for MTU in the name
+        let mtu = '1500'; // Default
+        for (const part of parts) {
+            if (part.startsWith('mtu')) {
+                mtu = part.replace('mtu', '');
+                break;
+            }
+        }
+        // Look for logging status
+        let loggingStatus = 'disabled'; // Default
+        for (const part of parts) {
+            if (part.includes('enabled') || part.includes('disabled')) {
+                loggingStatus = part.includes('enabled') ? 'enabled' : 'disabled';
+                break;
+            }
+        }
+        return `${serverType}-mtu${mtu}-logging_${loggingStatus}`;
     }
     /**
      * Determine the severity level based on the ratio to threshold
@@ -461,6 +458,34 @@ class AnomalyDetector {
         else {
             return 'low';
         }
+    }
+    /**
+     * Calculate the mean (average) of an array of numbers
+     * @param values Array of numbers
+     * @returns The mean value
+     */
+    calculateMean(values) {
+        if (values.length === 0)
+            return 0;
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return sum / values.length;
+    }
+    /**
+     * Calculate the standard deviation of an array of numbers
+     * @param values Array of numbers
+     * @param mean The mean value (optional, will be calculated if not provided)
+     * @returns The standard deviation
+     */
+    calculateStandardDeviation(values, mean) {
+        if (values.length === 0)
+            return 0;
+        const avg = mean !== undefined ? mean : this.calculateMean(values);
+        const squareDiffs = values.map(value => {
+            const diff = value - avg;
+            return diff * diff;
+        });
+        const avgSquareDiff = this.calculateMean(squareDiffs);
+        return Math.sqrt(avgSquareDiff);
     }
 }
 exports.AnomalyDetector = AnomalyDetector;

@@ -173,11 +173,15 @@ async function validateInputDirectory(inputDir) {
         if (!stats.isDirectory()) {
             throw new Error(`Input path is not a directory: ${inputDir}`);
         }
-        const contents = await fs_extra_1.default.readdir(inputDir);
-        // Check if there are any potential dataset directories
-        const potentialDatasets = contents.filter(item => item.startsWith('coredns-mtu') || item.startsWith('stock-mtu'));
-        if (potentialDatasets.length === 0) {
-            throw new Error(`No potential dataset directories found in: ${inputDir}`);
+        const contents = await fs_extra_1.default.readdir(inputDir, { withFileTypes: true });
+        // Check for flat structure (parameter/result files directly in directory)
+        const parameterFiles = contents.filter(item => item.isFile() && item.name.startsWith('parameters-results_'));
+        const resultFiles = contents.filter(item => item.isFile() && item.name.startsWith('results_'));
+        // Check for subdirectory structure (legacy)
+        const potentialDatasetDirs = contents.filter(item => item.isDirectory() && (item.name.startsWith('coredns-mtu') || item.name.startsWith('stock-mtu')));
+        // Valid if we have either flat structure files OR subdirectories
+        if (parameterFiles.length === 0 && resultFiles.length === 0 && potentialDatasetDirs.length === 0) {
+            throw new Error(`No dataset files or directories found in: ${inputDir}. Expected either parameter/result files or dataset subdirectories.`);
         }
         return true;
     }

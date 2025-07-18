@@ -44,8 +44,8 @@ class PluginManager {
                 if (await fs_extra_1.default.pathExists(directory)) {
                     const files = await fs_extra_1.default.readdir(directory);
                     for (const file of files) {
-                        // Only consider .js and .ts files
-                        if (file.endsWith(".js") || file.endsWith(".ts")) {
+                        // Only consider .js files and .ts files (but not .d.ts declaration files)
+                        if (file.endsWith(".js") || (file.endsWith(".ts") && !file.endsWith(".d.ts"))) {
                             const pluginPath = path_1.default.join(directory, file);
                             try {
                                 // Try to load the plugin

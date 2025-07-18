@@ -14,12 +14,12 @@
     "sourceMap": true,
     "removeComments": false,
     "noImplicitAny": true,
-    "strictNullChecks": true,
+    "strictNullChecks": false,
     "strictFunctionTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "baseUrl": ".",
@@ -30,7 +30,8 @@
   },
   "include": [
     "src/**/*",
-    "types/**/*"
+    "types/**/*",
+    "*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,5 +1,6 @@
 export interface Dataset {
     name: string;
+    displayName?: string;
     parametersFile: string;
     resultsFile: string;
     configuration: TestConfiguration;

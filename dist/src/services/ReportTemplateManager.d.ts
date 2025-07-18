@@ -56,6 +56,9 @@ export declare class ReportTemplateManager {
     private templates;
     private configManager;
     private activeTemplate;
+    private templateParser;
+    private templateRenderer;
+    private contextManager;
     /**
      * Create a new ReportTemplateManager instance
      * @param configManager Configuration manager instance
@@ -134,6 +137,14 @@ export declare class ReportTemplateManager {
      * @private
      */
     private renderTemplateSection;
+    /**
+     * Legacy template rendering method (used as fallback)
+     * @param template Template string
+     * @param data Data to use in the template
+     * @returns The rendered template
+     * @private
+     */
+    private legacyRenderTemplateSection;
     /**
      * Get a nested value from an object using dot notation
      * @param obj Object to get value from

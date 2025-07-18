@@ -2,6 +2,7 @@
 
 export interface Dataset {
   name: string;
+  displayName?: string;  // Descriptive name for display in reports
   parametersFile: string;
   resultsFile: string;
   configuration: TestConfiguration;

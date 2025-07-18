@@ -19,6 +19,20 @@ export declare class DefaultDatasetDiscoveryService implements DatasetDiscoveryS
      */
     discoverDatasets(rootPath: string): Promise<Dataset[]>;
     /**
+     * Discover datasets from a flat file structure
+     * @param rootPath The root directory containing the files
+     * @param files Array of file entries
+     * @returns A promise that resolves to an array of discovered datasets
+     */
+    private discoverFlatDatasets;
+    /**
+     * Discover datasets from subdirectory structure (legacy support)
+     * @param rootPath The root directory containing subdirectories
+     * @param entries Array of directory entries
+     * @returns A promise that resolves to an array of discovered datasets
+     */
+    private discoverSubdirectoryDatasets;
+    /**
      * Validate that a dataset has all required files and information
      * @param dataset The dataset to validate
      * @returns True if the dataset is complete, false otherwise
@@ -42,6 +56,24 @@ export declare class DefaultDatasetDiscoveryService implements DatasetDiscoveryS
      * @returns Configuration information extracted from the directory name
      */
     private extractConfigurationFromDirName;
+    /**
+     * Extract timestamp from file name for grouping
+     * @param fileName The file name to parse
+     * @returns Timestamp string extracted from the file name
+     */
+    private extractTimestampFromFileName;
+    /**
+     * Extract configuration from parameters data
+     * @param parametersData The parsed parameters JSON data
+     * @returns Configuration information extracted from the parameters
+     */
+    private extractConfigurationFromParameters;
+    /**
+     * Generate a descriptive configuration name from configuration parameters
+     * @param config Configuration parameters
+     * @returns A descriptive configuration name
+     */
+    private generateDescriptiveConfigName;
     /**
      * Extract date from file name
      * @param fileName The file name to parse

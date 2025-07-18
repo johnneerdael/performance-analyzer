@@ -60,13 +60,19 @@ export declare class AnomalyDetector {
      */
     private detectDnsAnomalies;
     /**
-     * Get a standardized configuration name from a dataset
-     * @param dataset The dataset to get the configuration name for
-     * @returns A standardized configuration name
+     * Generate a descriptive name for a configuration
+     * @param configName The configuration name
+     * @returns A descriptive name
      */
-    private getConfigurationName;
+    private getDescriptiveConfigName;
     /**
-     * Calculate the mean of an array of numbers
+     * Determine the severity level based on the ratio to threshold
+     * @param ratio The ratio of the value to the threshold
+     * @returns The severity level as 'low', 'medium', or 'high'
+     */
+    private determineSeverity;
+    /**
+     * Calculate the mean (average) of an array of numbers
      * @param values Array of numbers
      * @returns The mean value
      */
@@ -74,15 +80,9 @@ export declare class AnomalyDetector {
     /**
      * Calculate the standard deviation of an array of numbers
      * @param values Array of numbers
-     * @param mean Optional pre-calculated mean
+     * @param mean The mean value (optional, will be calculated if not provided)
      * @returns The standard deviation
      */
     private calculateStandardDeviation;
-    /**
-     * Determine the severity level based on the ratio to threshold
-     * @param ratio The ratio of the value to the threshold
-     * @returns The severity level as 'low', 'medium', or 'high'
-     */
-    private determineSeverity;
 }
 //# sourceMappingURL=AnomalyDetector.d.ts.map

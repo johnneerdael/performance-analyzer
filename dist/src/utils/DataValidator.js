@@ -30,8 +30,8 @@ class DataValidator {
         if (!dataset.parametersFile) {
             errors.push({
                 field: 'parametersFile',
-                message: 'Parameters file path is required',
-                severity: 'error'
+                message: 'Parameters file path is missing (optional if results file exists)',
+                severity: 'warning'
             });
         }
         if (!dataset.resultsFile) {

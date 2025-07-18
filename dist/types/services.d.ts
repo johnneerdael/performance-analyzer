@@ -18,6 +18,10 @@ export interface ReportGenerator {
     createExecutiveSummary(analysis: AnalysisResults): string;
     generateDetailedTables(analysis: AnalysisResults): string;
     createVisualizationDescriptions(analysis: AnalysisResults): string;
+    setDatasetDisplayNames(datasets: {
+        name: string;
+        displayName?: string;
+    }[]): void;
 }
 export interface ErrorHandler {
     handleFileSystemError(error: FileSystemError): boolean;

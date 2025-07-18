@@ -159,8 +159,8 @@ export class PluginManager {
           const files = await fs.readdir(directory);
 
           for (const file of files) {
-            // Only consider .js and .ts files
-            if (file.endsWith(".js") || file.endsWith(".ts")) {
+            // Only consider .js files and .ts files (but not .d.ts declaration files)
+            if (file.endsWith(".js") || (file.endsWith(".ts") && !file.endsWith(".d.ts"))) {
               const pluginPath = path.join(directory, file);
 
               try {

@@ -1,7 +1,7 @@
 import { Dataset, ConfigurationComparison, MtuAnalysis, LoggingAnalysis, ConfigurationRanking } from '../models';
 /**
  * ConfigurationComparator class for analyzing performance differences between configurations
- * Compares MTU settings, AWS logging impact, and ranks configurations by performance
+ * Compares MTU settings, DNS query logging impact, and ranks configurations by performance
  */
 export declare class ConfigurationComparator {
     private errorHandler;
@@ -24,9 +24,9 @@ export declare class ConfigurationComparator {
      */
     analyzeMtuImpact(datasets: Dataset[]): MtuAnalysis;
     /**
-     * Analyze the impact of AWS logging on performance
-     * @param datasets The datasets with different AWS logging configurations
-     * @returns AWS logging impact analysis
+     * Analyze the impact of DNS query logging on performance
+     * @param datasets The datasets with different DNS query logging configurations
+     * @returns DNS query logging impact analysis
      */
     analyzeLoggingImpact(datasets: Dataset[]): LoggingAnalysis;
     /**
@@ -54,7 +54,7 @@ export declare class ConfigurationComparator {
      */
     private groupDatasetsByServer;
     /**
-     * Group datasets by AWS logging status
+     * Group datasets by DNS query logging status
      * @param datasets The datasets to group
      * @returns Object with logging status as keys and arrays of datasets as values
      */
@@ -81,7 +81,7 @@ export declare class ConfigurationComparator {
      */
     private generateMtuRecommendations;
     /**
-     * Generate recommendations based on AWS logging impact analysis
+     * Generate recommendations based on DNS query logging impact analysis
      * @param performanceImpact Overall performance impact percentage
      * @param bandwidthDifference Bandwidth difference between logging disabled and enabled
      * @param latencyDifference Latency difference between logging enabled and disabled

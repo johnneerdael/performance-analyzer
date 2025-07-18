@@ -81,6 +81,7 @@ export declare class NetworkPerformanceAnalyzer {
     private config;
     private performanceMonitor;
     private pluginManager?;
+    private datasetDisplayNames;
     /**
      * Create a new NetworkPerformanceAnalyzer instance
      * @param discoveryService Service for discovering datasets
@@ -160,6 +161,36 @@ export declare class NetworkPerformanceAnalyzer {
      * @private
      */
     private logProgress;
+    /**
+     * Prepare MTU impact data for the comparison table
+     * @param analysis The analysis results
+     * @returns The MTU impact data
+     */
+    private prepareMtuImpactData;
+    /**
+     * Prepare DNS server data for the comparison table
+     * @param analysis The analysis results
+     * @returns The DNS server data
+     */
+    private prepareDnsServerData;
+    /**
+     * Prepare logging impact data for the comparison table
+     * @param analysis The analysis results
+     * @returns The logging impact data
+     */
+    private prepareLoggingImpactData;
+    /**
+     * Prepare anomaly distribution data for the comparison table
+     * @param anomalies The performance anomalies
+     * @returns The anomaly distribution data
+     */
+    private prepareAnomalyDistributionData;
+    /**
+     * Get the display name for a configuration
+     * @param configName The configuration name
+     * @returns The display name if available, otherwise the original name
+     */
+    private getConfigurationDisplayName;
 }
 /**
  * Factory function to create a new NetworkPerformanceAnalyzer instance with configuration and plugin support

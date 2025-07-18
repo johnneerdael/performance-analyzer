@@ -2,6 +2,9 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { ConfigurationManager } from '../config/ConfigurationManager';
+import { TemplateParser } from './templates/TemplateParser';
+import { TemplateRenderer } from './templates/TemplateRenderer';
+import { ContextManager } from './templates/ContextManager';
 
 /**
  * Template section definition
@@ -83,35 +86,42 @@ export const DEFAULT_TEMPLATE: ReportTemplate = {
     {
       id: 'configuration-overview',
       name: 'Configuration Overview',
-      template: '## Configuration Overview\n\nThe following configurations were analyzed and ranked based on overall performance:\n\n| Rank | Configuration | Overall Score | Bandwidth Score | Latency Score | Reliability Score |\n|------|--------------|--------------|----------------|--------------|------------------|\n{{#each configurations}}| {{rank}} | {{configuration}} | {{overallScore}} | {{bandwidthScore}} | {{latencyScore}} | {{reliabilityScore}} |\n{{/each}}\n',
+      template: '## Configuration Overview\n\nThe following configurations were analyzed and ranked based on overall performance:\n\n| Rank | Configuration | Overall Score | Bandwidth Score | Latency Score | Reliability Score |\n|------|--------------|--------------|----------------|--------------|------------------|\n{{#each configurations}}| {{rank}} | {{displayName}} | {{overallScore}} | {{bandwidthScore}} | {{latencyScore}} | {{reliabilityScore}} |\n{{/each}}\n',
       required: true,
       order: 2
     },
     {
+      id: 'side-by-side-comparisons',
+      name: 'Side-by-Side Comparisons',
+      template: '## Side-by-Side Comparisons\n\nThese tables provide direct comparisons across different configurations to help identify patterns and make informed decisions.\n\n### DNS Performance Comparison\n\nThis table provides a side-by-side comparison of DNS performance metrics across all configurations:\n\n| Configuration | Avg Response (ms) | Median Response (ms) | Success Rate (%) | Domains with >150ms |\n|---------------|------------------|----------------------|------------------|---------------------|\n{{#each dnsMetrics}}| {{displayName}} | {{avgResponseTimeMs}} | {{medianResponseTimeMs}} | {{successRate}} | {{slowDomainsCount}} |\n{{/each}}\n\n### MTU Impact Analysis\n\nThis table shows the impact of different MTU settings across DNS server implementations:\n\n| MTU Setting | Avg Bandwidth (Mbps) | Avg Latency (ms) | Jitter (ms) | Packet Loss (%) | Overall Score |\n|-------------|----------------------|------------------|-------------|-----------------|---------------|\n{{#each mtuImpactData}}| {{mtuSetting}} | {{avgBandwidth}} | {{avgLatency}} | {{jitter}} | {{packetLoss}} | {{overallScore}} |\n{{/each}}\n\n### DNS Server Implementation Comparison\n\nThis table compares the performance of different DNS server implementations across key metrics:\n\n| DNS Server | Avg Bandwidth (Mbps) | Avg Latency (ms) | DNS Response (ms) | Packet Loss (%) | Overall Score |\n|------------|----------------------|------------------|-------------------|-----------------|---------------|\n{{#each dnsServerData}}| {{server}} | {{avgBandwidth}} | {{avgLatency}} | {{dnsResponse}} | {{packetLoss}} | {{overallScore}} |\n{{/each}}\n\n### Logging Impact Analysis\n\nThis table shows the impact of logging configuration on network performance:\n\n| Logging | Avg Bandwidth (Mbps) | Avg Latency (ms) | DNS Response (ms) | Packet Loss (%) | Overall Score |\n|---------|----------------------|------------------|-------------------|-----------------|---------------|\n{{#each loggingImpactData}}| {{status}} | {{avgBandwidth}} | {{avgLatency}} | {{dnsResponse}} | {{packetLoss}} | {{overallScore}} |\n{{/each}}\n\n### Anomaly Distribution\n\nThis table summarizes the distribution of anomalies by type and severity across configurations:\n\n| Configuration | Bandwidth Anomalies | Latency Anomalies | Packet Loss Anomalies | DNS Anomalies | Total |\n|---------------|---------------------|-------------------|----------------------|---------------|-------|\n{{#each anomalyDistribution}}| {{configuration}} | {{bandwidthAnomalies}} | {{latencyAnomalies}} | {{packetLossAnomalies}} | {{dnsAnomalies}} | {{total}} |\n{{/each}}\n',
+      required: true,
+      order: 3
+    },
+    {
       id: 'bandwidth-analysis',
       name: 'Bandwidth Analysis',
-      template: '## Bandwidth Performance Analysis\n\n### Bandwidth Metrics\n\nThe following table shows bandwidth performance metrics across different configurations:\n\n| Configuration | Avg (Mbps) | Median (Mbps) | Max (Mbps) | Min (Mbps) | Std Dev | 95th % | 99th % |\n|--------------|------------|---------------|------------|------------|---------|--------|--------|\n{{#each bandwidthMetrics}}| {{configuration}} | {{avgBandwidthMbps}} | {{medianBandwidthMbps}} | {{maxBandwidthMbps}} | {{minBandwidthMbps}} | {{standardDeviation}} | {{percentile95}} | {{percentile99}} |\n{{/each}}\n',
+      template: '## Bandwidth Performance Analysis\n\n### Bandwidth Metrics\n\nThe following table shows bandwidth performance metrics across different configurations:\n\n| Configuration | Avg (Mbps) | Median (Mbps) | Max (Mbps) | Min (Mbps) | Std Dev | 95th % | 99th % |\n|--------------|------------|---------------|------------|------------|---------|--------|--------|\n{{#each bandwidthMetrics}}| {{displayName}} | {{avgBandwidthMbps}} | {{medianBandwidthMbps}} | {{maxBandwidthMbps}} | {{minBandwidthMbps}} | {{standardDeviation}} | {{percentile95}} | {{percentile99}} |\n{{/each}}\n',
       required: false,
       order: 3
     },
     {
       id: 'latency-analysis',
       name: 'Latency Analysis',
-      template: '## Latency Performance Analysis\n\n### Latency Metrics\n\nThe following table shows latency performance metrics across different configurations:\n\n| Configuration | Avg (ms) | Median (ms) | Max (ms) | Min (ms) | Jitter (ms) |\n|--------------|----------|-------------|----------|----------|-------------|\n{{#each latencyMetrics}}| {{configuration}} | {{avgLatencyMs}} | {{medianLatencyMs}} | {{maxLatencyMs}} | {{minLatencyMs}} | {{jitterMs}} |\n{{/each}}\n',
+      template: '## Latency Performance Analysis\n\n### Latency Metrics\n\nThe following table shows latency performance metrics across different configurations:\n\n| Configuration | Avg (ms) | Median (ms) | Max (ms) | Min (ms) | Jitter (ms) |\n|--------------|----------|-------------|----------|----------|-------------|\n{{#each latencyMetrics}}| {{displayName}} | {{avgLatencyMs}} | {{medianLatencyMs}} | {{maxLatencyMs}} | {{minLatencyMs}} | {{jitterMs}} |\n{{/each}}\n',
       required: false,
       order: 4
     },
     {
       id: 'dns-analysis',
       name: 'DNS Analysis',
-      template: '## DNS Performance Analysis\n\n### DNS Performance Metrics\n\nThe following table shows DNS performance metrics across different configurations:\n\n| Configuration | Avg Response Time (ms) | Median Response Time (ms) | Success Rate (%) |\n|--------------|------------------------|---------------------------|------------------|\n{{#each dnsMetrics}}| {{configuration}} | {{avgResponseTimeMs}} | {{medianResponseTimeMs}} | {{successRate}} |\n{{/each}}\n\n### Slowest DNS Domains\n\nThe following table shows the 10 slowest domains by average response time:\n\n| Domain | Avg Response Time (ms) | Success Rate (%) | Query Count |\n|--------|------------------------|------------------|-------------|\n{{#each slowestDomains}}| {{domain}} | {{avgResponseTimeMs}} | {{successRate}} | {{queryCount}} |\n{{/each}}\n',
+      template: '## DNS Performance Analysis\n\n### DNS Performance Metrics\n\nThe following table shows DNS performance metrics across different configurations:\n\n| Configuration | Avg Response Time (ms) | Median Response Time (ms) | Success Rate (%) |\n|--------------|------------------------|---------------------------|------------------|\n{{#each dnsMetrics}}| {{displayName}} | {{avgResponseTimeMs}} | {{medianResponseTimeMs}} | {{successRate}} |\n{{/each}}\n\n### Slowest DNS Domains\n\nThe following table shows the 10 slowest domains by average response time:\n\n| Domain | Avg Response Time (ms) | Success Rate (%) | Query Count |\n|--------|------------------------|------------------|-------------|\n{{#each slowestDomains}}| {{domain}} | {{avgResponseTimeMs}} | {{successRate}} | {{queryCount}} |\n{{/each}}\n',
       required: false,
       order: 5
     },
     {
       id: 'anomalies',
       name: 'Performance Anomalies',
-      template: '## Performance Anomalies\n\n{{#if anomalies.length}}The following performance anomalies were detected during analysis:\n\n{{#each anomalies}}### {{severity}} Severity: {{type}} Anomaly in {{configuration}}\n\n**Description:** {{description}}\n\n**Affected Metrics:**\n{{#each affectedMetrics}}- {{this}}\n{{/each}}\n\n**Recommendations:**\n{{#each recommendations}}- {{this}}\n{{/each}}\n\n{{/each}}{{else}}No significant performance anomalies were detected in the analyzed datasets.{{/if}}\n',
+      template: '## Performance Anomalies\n\n{{#if anomalies.length}}The following performance anomalies were detected during analysis:\n\n{{#each anomalies}}### {{severity}} Severity: {{type}} Anomaly in {{displayName}}\n\n**Description:** {{description}}\n\n**Affected Metrics:**\n{{#each affectedMetrics}}- {{this}}\n{{/each}}\n\n**Recommendations:**\n{{#each recommendations}}- {{this}}\n{{/each}}\n\n{{/each}}{{else}}No significant performance anomalies were detected in the analyzed datasets.{{/if}}\n',
       required: false,
       order: 6
     },
@@ -139,6 +149,9 @@ export class ReportTemplateManager {
   private templates: Map<string, ReportTemplate> = new Map();
   private configManager: ConfigurationManager;
   private activeTemplate: string = 'default';
+  private templateParser: TemplateParser;
+  private templateRenderer: TemplateRenderer;
+  private contextManager: ContextManager;
   
   /**
    * Create a new ReportTemplateManager instance
@@ -146,6 +159,11 @@ export class ReportTemplateManager {
    */
   constructor(configManager: ConfigurationManager) {
     this.configManager = configManager;
+    
+    // Initialize template system components
+    this.contextManager = new ContextManager();
+    this.templateParser = new TemplateParser();
+    this.templateRenderer = new TemplateRenderer(this.contextManager);
     
     // Register default template
     this.registerTemplate('default', DEFAULT_TEMPLATE);
@@ -352,6 +370,32 @@ export class ReportTemplateManager {
    * @private
    */
   private renderTemplateSection(template: string, data: any): string {
+    try {
+      // Parse the template into an AST
+      const ast = this.templateParser.parse(template);
+      
+      // Render the AST with the data
+      const result = this.templateRenderer.render(ast, data, {
+        debugMode: process.env.DEBUG === 'true' || process.env.NODE_ENV === 'development'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error rendering template section:', error);
+      
+      // Fall back to the old rendering method if there's an error
+      return this.legacyRenderTemplateSection(template, data);
+    }
+  }
+  
+  /**
+   * Legacy template rendering method (used as fallback)
+   * @param template Template string
+   * @param data Data to use in the template
+   * @returns The rendered template
+   * @private
+   */
+  private legacyRenderTemplateSection(template: string, data: any): string {
     // Simple template rendering with {{variable}} and {{#each array}}...{{/each}} support
     let result = template;
     
@@ -366,22 +410,48 @@ export class ReportTemplateManager {
       const trimmedKey = arrayKey.trim();
       const array = this.getNestedValue(data, trimmedKey);
       
+      console.log(`[DEBUG] Template each loop - key: ${trimmedKey}, array:`, array);
+      
       if (!Array.isArray(array)) {
+        console.log(`[DEBUG] Not an array or undefined for key: ${trimmedKey}`);
         return '';
       }
       
-      return array.map(item => {
+      const result = array.map(item => {
         let itemContent = content;
         
+        console.log(`[DEBUG] Processing item:`, item, `Content template:`, content);
+        
         // Replace {{this}} with the current item
-        itemContent = itemContent.replace(/\{\{this\}\}/g, String(item));
+        if (typeof item === 'object' && item !== null) {
+          try {
+            itemContent = itemContent.replace(/\{\{this\}\}/g, JSON.stringify(item));
+          } catch (error) {
+            itemContent = itemContent.replace(/\{\{this\}\}/g, '[Object]');
+          }
+        } else {
+          itemContent = itemContent.replace(/\{\{this\}\}/g, String(item));
+        }
+        
+        console.log(`[DEBUG] After {{this}} replacement:`, itemContent);
         
         // Replace {{property}} with item properties
         itemContent = itemContent.replace(/\{\{([^#\/][^}]*)\}\}/g, (propMatch: string, propKey: string) => {
           const trimmedPropKey = propKey.trim();
           
           if (typeof item === 'object' && item !== null) {
-            return item[trimmedPropKey] !== undefined ? String(item[trimmedPropKey]) : '';
+            const value = item[trimmedPropKey];
+            if (value !== undefined) {
+              if (typeof value === 'object' && value !== null) {
+                try {
+                  return JSON.stringify(value);
+                } catch (error) {
+                  return '[Object]';
+                }
+              }
+              return String(value);
+            }
+            return '';
           }
           
           return '';
@@ -389,6 +459,9 @@ export class ReportTemplateManager {
         
         return itemContent;
       }).join('');
+      
+      console.log(`[DEBUG] Template each result for ${trimmedKey}:`, result);
+      return result;
     });
     
     // Handle {{#if condition}}...{{else}}...{{/if}} conditionals

@@ -1,11 +1,11 @@
 {
   "name": "network-performance-analyzer",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Automated analysis tool for network performance test datasets containing DNS testing results and iperf3 performance measurements",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "network-performance-analyzer": "./dist/bin/cli.js"
+    "network-performance-analyzer": "dist/src/bin/cli.js"
   },
   "scripts": {
     "build": "tsc",

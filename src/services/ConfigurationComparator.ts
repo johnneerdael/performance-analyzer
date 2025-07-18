@@ -19,7 +19,7 @@ import { DnsAnalyzer } from './DnsAnalyzer';
 
 /**
  * ConfigurationComparator class for analyzing performance differences between configurations
- * Compares MTU settings, AWS logging impact, and ranks configurations by performance
+ * Compares MTU settings, DNS query logging impact, and ranks configurations by performance
  */
 export class ConfigurationComparator {
   private errorHandler: DefaultErrorHandler;
@@ -45,7 +45,7 @@ export class ConfigurationComparator {
       // Analyze MTU impact
       const mtuImpact = this.analyzeMtuImpact(datasets);
       
-      // Analyze AWS logging impact
+      // Analyze DNS query logging impact
       const loggingImpact = this.analyzeLoggingImpact(datasets);
       
       // Create overall configuration ranking
@@ -152,13 +152,13 @@ export class ConfigurationComparator {
   }
 
   /**
-   * Analyze the impact of AWS logging on performance
-   * @param datasets The datasets with different AWS logging configurations
-   * @returns AWS logging impact analysis
+   * Analyze the impact of DNS query logging on performance
+   * @param datasets The datasets with different DNS query logging configurations
+   * @returns DNS query logging impact analysis
    */
   analyzeLoggingImpact(datasets: Dataset[]): LoggingAnalysis {
     try {
-      // Group datasets by AWS logging status
+      // Group datasets by DNS query logging status
       const loggingEnabled = datasets.filter(dataset => dataset.configuration.awsLogging);
       const loggingDisabled = datasets.filter(dataset => !dataset.configuration.awsLogging);
       
@@ -169,7 +169,7 @@ export class ConfigurationComparator {
           bandwidthDifference: 0,
           latencyDifference: 0,
           recommendations: [
-            "Insufficient data to analyze AWS logging impact. Need datasets with both enabled and disabled logging."
+            "Insufficient data to analyze DNS query logging impact. Need datasets with both enabled and disabled logging."
           ]
         };
       }
@@ -368,7 +368,7 @@ export class ConfigurationComparator {
   }
 
   /**
-   * Group datasets by AWS logging status
+   * Group datasets by DNS query logging status
    * @param datasets The datasets to group
    * @returns Object with logging status as keys and arrays of datasets as values
    */
@@ -547,7 +547,7 @@ export class ConfigurationComparator {
   }
 
   /**
-   * Generate recommendations based on AWS logging impact analysis
+   * Generate recommendations based on DNS query logging impact analysis
    * @param performanceImpact Overall performance impact percentage
    * @param bandwidthDifference Bandwidth difference between logging disabled and enabled
    * @param latencyDifference Latency difference between logging enabled and disabled
@@ -563,23 +563,23 @@ export class ConfigurationComparator {
     // Determine if logging has a significant impact
     if (Math.abs(performanceImpact) < 1) {
       recommendations.push(
-        "AWS logging has minimal impact on network performance (less than 1% difference)."
+        "DNS query logging has minimal impact on network performance (less than 1% difference)."
       );
     } else if (performanceImpact >= 1) {
       // Positive impact means disabled logging performs better
       recommendations.push(
-        `Disabling AWS logging improves network performance by approximately ${performanceImpact.toFixed(1)}%.`
+        `Disabling DNS query logging improves network performance by approximately ${performanceImpact.toFixed(1)}%.`
       );
       
       if (performanceImpact >= 5) {
         recommendations.push(
-          "Consider disabling AWS logging in performance-critical environments."
+          "Consider disabling DNS query logging in performance-critical environments."
         );
       }
     } else {
       // Negative impact means enabled logging performs better (unusual)
       recommendations.push(
-        `Enabling AWS logging appears to improve network performance by approximately ${Math.abs(performanceImpact).toFixed(1)}%.`
+        `Enabling DNS query logging appears to improve network performance by approximately ${Math.abs(performanceImpact).toFixed(1)}%.`
       );
       recommendations.push(
         "This is unexpected and may indicate other factors affecting the test results."
@@ -589,14 +589,14 @@ export class ConfigurationComparator {
     // Add specific bandwidth recommendations
     if (bandwidthDifference >= 50) {
       recommendations.push(
-        `Disabling AWS logging provides ${bandwidthDifference.toFixed(1)} Mbps higher bandwidth.`
+        `Disabling DNS query logging provides ${bandwidthDifference.toFixed(1)} Mbps higher bandwidth.`
       );
     }
     
     // Add specific latency recommendations
     if (latencyDifference >= 5) {
       recommendations.push(
-        `Enabling AWS logging increases latency by ${latencyDifference.toFixed(1)} ms.`
+        `Enabling DNS query logging increases latency by ${latencyDifference.toFixed(1)} ms.`
       );
     }
     
