@@ -1,5 +1,5 @@
 // Network Performance Analyzer - Main Orchestrator
-import { 
+import {
   Dataset,
   AnalysisResults,
   DatasetDiscoveryService,
@@ -8,18 +8,18 @@ import {
   ReportGenerator,
   ErrorHandler,
   ExecutiveSummary,
-  TestResults
-} from '../models';
-import fs from 'fs-extra';
-import path from 'path';
-import { DefaultDatasetDiscoveryService } from './DatasetDiscoveryService';
-import { DefaultDataParser } from './DataParser';
-import { DefaultAnalysisEngine } from './AnalysisEngine';
-import { DefaultReportGenerator } from './ReportGenerator';
-import { DefaultErrorHandler } from '../utils/ErrorHandler';
-import { ConfigurationManager } from '../config/ConfigurationManager';
-import { PluginManager } from '../plugins/PluginManager';
-import { ReportTemplateManager } from './ReportTemplateManager';
+  TestResults,
+} from "../models";
+import fs from "fs-extra";
+import path from "path";
+import { DefaultDatasetDiscoveryService } from "./DatasetDiscoveryService";
+import { DefaultDataParser } from "./DataParser";
+import { DefaultAnalysisEngine } from "./AnalysisEngine";
+import { DefaultReportGenerator } from "./ReportGenerator";
+import { DefaultErrorHandler } from "../utils/ErrorHandler";
+import { ConfigurationManager } from "../config/ConfigurationManager";
+import { PluginManager } from "../plugins/PluginManager";
+import { ReportTemplateManager } from "./ReportTemplateManager";
 
 /**
  * Configuration options for the NetworkPerformanceAnalyzer
@@ -30,77 +30,79 @@ export interface AnalyzerConfig {
    * @default true
    */
   continueOnError?: boolean | undefined;
-  
+
   /**
    * Whether to log progress information during analysis
    * @default true
    */
   logProgress?: boolean | undefined;
-  
+
   /**
    * Path to save the generated report
    * If not provided, the report will only be returned as a string
    */
   reportOutputPath?: string | undefined;
-  
+
   /**
    * Custom thresholds for anomaly detection
    */
-  anomalyThresholds?: {
-    bandwidthVariation?: number | undefined;
-    latencyVariation?: number | undefined;
-    packetLossThreshold?: number | undefined;
-    dnsResponseTimeVariation?: number | undefined;
-    cpuUtilizationThreshold?: number | undefined;
-  } | undefined;
-  
+  anomalyThresholds?:
+    | {
+        bandwidthVariation?: number | undefined;
+        latencyVariation?: number | undefined;
+        packetLossThreshold?: number | undefined;
+        dnsResponseTimeVariation?: number | undefined;
+        cpuUtilizationThreshold?: number | undefined;
+      }
+    | undefined;
+
   /**
    * Whether to use parallel processing for dataset analysis
    * @default true
    */
   useParallelProcessing?: boolean | undefined;
-  
+
   /**
    * Maximum number of parallel tasks to run
    * @default 4
    */
   maxParallelTasks?: number | undefined;
-  
+
   /**
    * Whether to enable performance monitoring
    * @default false
    */
   enablePerformanceMonitoring?: boolean | undefined;
-  
+
   /**
    * Maximum memory usage percentage before triggering garbage collection
    * @default 80
    */
   memoryThresholdPercent?: number | undefined;
-  
+
   /**
    * Path to configuration file
    * If provided, configuration will be loaded from this file
    */
   configPath?: string | undefined;
-  
+
   /**
    * Environment to use for configuration
    * @default 'development'
    */
   environment?: string | undefined;
-  
+
   /**
    * Paths to plugin directories
    */
   pluginDirectories?: string[] | undefined;
-  
+
   /**
    * Report template ID to use
    * @default 'default'
    */
   reportTemplateId?: string | undefined;
-  
+
   /**
    * Report sections to include
    */
@@ -111,7 +113,7 @@ export interface AnalyzerConfig {
  * Main orchestrator class for the Network Performance Analyzer
  * Coordinates the end-to-end workflow from dataset discovery to report generation
  */
-import { PerformanceMonitor } from '../utils/PerformanceMonitor';
+import { PerformanceMonitor } from "../utils/PerformanceMonitor";
 
 export class NetworkPerformanceAnalyzer {
   private discoveryService: DatasetDiscoveryService;
@@ -121,6 +123,7 @@ export class NetworkPerformanceAnalyzer {
   private errorHandler: ErrorHandler;
   private config: Required<AnalyzerConfig>;
   private performanceMonitor: PerformanceMonitor | null = null;
+  private pluginManager?: PluginManager;
 
   /**
    * Create a new NetworkPerformanceAnalyzer instance
@@ -144,25 +147,39 @@ export class NetworkPerformanceAnalyzer {
     this.analysisEngine = analysisEngine;
     this.reportGenerator = reportGenerator;
     this.errorHandler = errorHandler;
-    
+
     // Set default configuration values
     this.config = {
-      continueOnError: config.continueOnError !== undefined ? config.continueOnError : true,
+      continueOnError:
+        config.continueOnError !== undefined ? config.continueOnError : true,
       logProgress: config.logProgress !== undefined ? config.logProgress : true,
       reportOutputPath: config.reportOutputPath,
-      anomalyThresholds: config.anomalyThresholds || {},
-      useParallelProcessing: config.useParallelProcessing !== undefined ? config.useParallelProcessing : true,
+      anomalyThresholds: config.anomalyThresholds
+        ? { ...config.anomalyThresholds }
+        : {},
+      useParallelProcessing:
+        config.useParallelProcessing !== undefined
+          ? config.useParallelProcessing
+          : true,
       maxParallelTasks: config.maxParallelTasks || 4,
-      enablePerformanceMonitoring: config.enablePerformanceMonitoring !== undefined ? config.enablePerformanceMonitoring : false,
-      memoryThresholdPercent: config.memoryThresholdPercent || 80
+      enablePerformanceMonitoring:
+        config.enablePerformanceMonitoring !== undefined
+          ? config.enablePerformanceMonitoring
+          : false,
+      memoryThresholdPercent: config.memoryThresholdPercent || 80,
+      configPath: config.configPath,
+      environment: config.environment || "development",
+      pluginDirectories: config.pluginDirectories || [],
+      reportTemplateId: config.reportTemplateId || "default",
+      includeSections: config.includeSections || [],
     };
-    
+
     // Initialize performance monitoring if enabled
     if (this.config.enablePerformanceMonitoring) {
       this.initializePerformanceMonitoring();
     }
   }
-  
+
   /**
    * Initialize performance monitoring
    */
@@ -170,14 +187,20 @@ export class NetworkPerformanceAnalyzer {
     this.performanceMonitor = new PerformanceMonitor({
       monitoringInterval: 5000,
       memoryThresholdPercent: this.config.memoryThresholdPercent || 80,
-      logToConsole: this.config.logProgress
+      ...(this.config.logProgress !== undefined
+        ? { logToConsole: this.config.logProgress }
+        : {}),
     });
-    
+
     // Set up event listeners
-    this.performanceMonitor.on('memory-threshold-exceeded', (data) => {
-      this.logProgress(`Memory threshold exceeded: ${data.current.toFixed(1)}% > ${data.threshold}%`);
+    this.performanceMonitor.on("memory-threshold-exceeded", (data) => {
+      this.logProgress(
+        `Memory threshold exceeded: ${data.current.toFixed(1)}% > ${
+          data.threshold
+        }%`
+      );
     });
-    
+
     // Start monitoring
     this.performanceMonitor.start();
   }
@@ -190,76 +213,81 @@ export class NetworkPerformanceAnalyzer {
   async analyze(rootPath: string): Promise<string> {
     try {
       this.logProgress(`Starting analysis of datasets in ${rootPath}`);
-      
+
       // Step 1: Discover datasets
-      this.logProgress('Discovering datasets...');
+      this.logProgress("Discovering datasets...");
       const datasets = await this.discoverDatasets(rootPath);
-      
+
       if (datasets.length === 0) {
         const error = new Error(`No valid datasets found in ${rootPath}`);
-        this.errorHandler.logError(error, 'Dataset discovery failed');
-        
+        this.errorHandler.logError(error, "Dataset discovery failed");
+
         if (this.config.continueOnError) {
-          this.logProgress('Continuing with empty dataset list due to continueOnError=true');
+          this.logProgress(
+            "Continuing with empty dataset list due to continueOnError=true"
+          );
           return this.generateEmptyReport();
         }
-        
+
         throw error;
       }
-      
+
       this.logProgress(`Found ${datasets.length} datasets for analysis`);
-      
+
       // Step 2: Load and parse dataset files
-      this.logProgress('Loading and parsing dataset files...');
+      this.logProgress("Loading and parsing dataset files...");
       const parsedDatasets = await this.parseDatasetFiles(datasets);
-      
+
       if (parsedDatasets.length === 0) {
-        const error = new Error('No datasets could be successfully parsed');
-        this.errorHandler.logError(error, 'Dataset parsing failed');
-        
+        const error = new Error("No datasets could be successfully parsed");
+        this.errorHandler.logError(error, "Dataset parsing failed");
+
         if (this.config.continueOnError) {
-          this.logProgress('Continuing with empty dataset list due to continueOnError=true');
+          this.logProgress(
+            "Continuing with empty dataset list due to continueOnError=true"
+          );
           return this.generateEmptyReport();
         }
-        
+
         throw error;
       }
-      
+
       this.logProgress(`Successfully parsed ${parsedDatasets.length} datasets`);
-      
+
       // Step 3: Perform analysis
-      this.logProgress('Performing analysis...');
+      this.logProgress("Performing analysis...");
       const analysisResults = await this.performAnalysis(parsedDatasets);
-      
+
       // Step 4: Generate report
-      this.logProgress('Generating report...');
+      this.logProgress("Generating report...");
       const report = await this.reportGenerator.generateReport(analysisResults);
-      
+
       // Step 5: Save report if output path is provided
       if (this.config.reportOutputPath) {
         await this.saveReport(report, this.config.reportOutputPath);
         this.logProgress(`Report saved to ${this.config.reportOutputPath}`);
       }
-      
-      this.logProgress('Analysis completed successfully');
+
+      this.logProgress("Analysis completed successfully");
       return report;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.errorHandler.logError(
-        error instanceof Error ? error : new Error(errorMessage), 
-        'Error during analysis workflow'
+        error instanceof Error ? error : new Error(errorMessage),
+        "Error during analysis workflow"
       );
-      
+
       // If configured to continue on error, return an error report
       if (this.config.continueOnError) {
-        this.logProgress('Generating error report due to continueOnError=true');
+        this.logProgress("Generating error report due to continueOnError=true");
         return this.generateErrorReport(errorMessage);
       }
-      
+
       throw error;
     }
   }
-  
+
   /**
    * Generate a report for when no datasets are available
    * @returns A simple markdown report indicating no datasets were found
@@ -288,7 +316,7 @@ No valid datasets were found or could be successfully parsed. Please check the f
 *Report generated on ${new Date().toISOString()}*
 `;
   }
-  
+
   /**
    * Generate a report for when an error occurs during analysis
    * @param errorMessage The error message to include in the report
@@ -331,21 +359,27 @@ The analysis could not be completed successfully. Any partial results may be inc
     try {
       // Use the discovery service to find datasets
       const datasets = await this.discoveryService.discoverDatasets(rootPath);
-      
+
       // Log information about each dataset
-      datasets.forEach(dataset => {
-        this.logProgress(`Found dataset: ${dataset.name} (MTU: ${dataset.configuration.mtu}, AWS Logging: ${dataset.configuration.awsLogging ? 'enabled' : 'disabled'})`);
+      datasets.forEach((dataset) => {
+        this.logProgress(
+          `Found dataset: ${dataset.name} (MTU: ${
+            dataset.configuration.mtu
+          }, AWS Logging: ${
+            dataset.configuration.awsLogging ? "enabled" : "disabled"
+          })`
+        );
       });
-      
+
       return datasets;
     } catch (error) {
-      this.errorHandler.logError(error as Error, 'Error discovering datasets');
-      
+      this.errorHandler.logError(error as Error, "Error discovering datasets");
+
       // If configured to continue on error, return empty array
       if (this.config.continueOnError) {
         return [];
       }
-      
+
       throw error;
     }
   }
@@ -359,116 +393,168 @@ The analysis could not be completed successfully. Any partial results may be inc
   private async parseDatasetFiles(datasets: Dataset[]): Promise<Dataset[]> {
     // Start performance monitoring for this operation
     if (this.performanceMonitor) {
-      this.performanceMonitor.startOperation('parseDatasetFiles');
+      this.performanceMonitor.startOperation("parseDatasetFiles");
     }
-    
+
     try {
       const parsedDatasets: Dataset[] = [];
-      
+
       // Use parallel processing if enabled
       if (this.config.useParallelProcessing && datasets.length > 1) {
-        this.logProgress(`Using parallel processing for ${datasets.length} datasets (max ${this.config.maxParallelTasks} concurrent tasks)`);
-        
+        this.logProgress(
+          `Using parallel processing for ${datasets.length} datasets (max ${this.config.maxParallelTasks} concurrent tasks)`
+        );
+
         // Process datasets in batches to limit concurrency
         const batches: Dataset[][] = [];
-        const batchSize = Math.min(this.config.maxParallelTasks || 4, datasets.length);
-        
+        const batchSize = Math.min(
+          this.config.maxParallelTasks || 4,
+          datasets.length
+        );
+
         // Create batches of datasets
         for (let i = 0; i < datasets.length; i += batchSize) {
           batches.push(datasets.slice(i, i + batchSize));
         }
-        
+
         // Process each batch in parallel
         for (const batch of batches) {
           // Create parsing promises for all datasets in the batch
           const parsingPromises = batch.map(async (dataset) => {
             try {
               this.logProgress(`Parsing dataset: ${dataset.name}`);
-              
+
               // Parse parameters file if it exists
               let parameters = null;
-              if (dataset.parametersFile && await fs.pathExists(dataset.parametersFile)) {
-                this.logProgress(`Parsing parameters file: ${path.basename(dataset.parametersFile)}`);
-                parameters = await this.dataParser.parseParameters(dataset.parametersFile);
+              if (
+                dataset.parametersFile &&
+                (await fs.pathExists(dataset.parametersFile))
+              ) {
+                this.logProgress(
+                  `Parsing parameters file: ${path.basename(
+                    dataset.parametersFile
+                  )}`
+                );
+                parameters = await this.dataParser.parseParameters(
+                  dataset.parametersFile
+                );
               }
-              
+
               // Parse results file if it exists
               let results: TestResults | null = null;
-              if (dataset.resultsFile && await fs.pathExists(dataset.resultsFile)) {
-                this.logProgress(`Parsing results file: ${path.basename(dataset.resultsFile)}`);
-                results = await this.dataParser.parseResults(dataset.resultsFile);
+              if (
+                dataset.resultsFile &&
+                (await fs.pathExists(dataset.resultsFile))
+              ) {
+                this.logProgress(
+                  `Parsing results file: ${path.basename(dataset.resultsFile)}`
+                );
+                results = await this.dataParser.parseResults(
+                  dataset.resultsFile
+                );
               }
-              
+
               // Add parsed data to dataset
               const parsedDataset = {
                 ...dataset,
                 parameters,
-                results
+                results,
               };
-              
+
               // Only return datasets with results
               if (parsedDataset.results) {
-                this.logProgress(`Successfully parsed dataset: ${dataset.name}`);
+                this.logProgress(
+                  `Successfully parsed dataset: ${dataset.name}`
+                );
                 return parsedDataset;
               } else {
-                this.logProgress(`Skipping dataset ${dataset.name} - no results found`);
+                this.logProgress(
+                  `Skipping dataset ${dataset.name} - no results found`
+                );
                 return null;
               }
             } catch (error) {
-              this.errorHandler.logError(error as Error, `Error parsing dataset: ${dataset.name}`);
-              
+              this.errorHandler.logError(
+                error as Error,
+                `Error parsing dataset: ${dataset.name}`
+              );
+
               // If configured to continue on error, return null
               if (this.config.continueOnError) {
                 return null;
               }
-              
+
               throw error;
             }
           });
-          
+
           // Wait for all parsing promises in this batch to complete
           const batchResults = await Promise.all(parsingPromises);
-          
+
           // Add successful results to the parsed datasets array
-          parsedDatasets.push(...batchResults.filter((result): result is Dataset & {parameters: any, results: any} => result !== null));
+          parsedDatasets.push(
+            ...batchResults.filter(
+              (result): result is Dataset & { parameters: any; results: any } =>
+                result !== null
+            )
+          );
         }
       } else {
         // Use sequential processing for a single dataset or if parallel processing is disabled
         for (const dataset of datasets) {
           try {
             this.logProgress(`Parsing dataset: ${dataset.name}`);
-            
+
             // Parse parameters file if it exists
             let parameters = null;
-            if (dataset.parametersFile && await fs.pathExists(dataset.parametersFile)) {
-              this.logProgress(`Parsing parameters file: ${path.basename(dataset.parametersFile)}`);
-              parameters = await this.dataParser.parseParameters(dataset.parametersFile);
+            if (
+              dataset.parametersFile &&
+              (await fs.pathExists(dataset.parametersFile))
+            ) {
+              this.logProgress(
+                `Parsing parameters file: ${path.basename(
+                  dataset.parametersFile
+                )}`
+              );
+              parameters = await this.dataParser.parseParameters(
+                dataset.parametersFile
+              );
             }
-            
+
             // Parse results file if it exists
             let results: TestResults | null = null;
-            if (dataset.resultsFile && await fs.pathExists(dataset.resultsFile)) {
-              this.logProgress(`Parsing results file: ${path.basename(dataset.resultsFile)}`);
+            if (
+              dataset.resultsFile &&
+              (await fs.pathExists(dataset.resultsFile))
+            ) {
+              this.logProgress(
+                `Parsing results file: ${path.basename(dataset.resultsFile)}`
+              );
               results = await this.dataParser.parseResults(dataset.resultsFile);
             }
-            
+
             // Add parsed data to dataset
             const parsedDataset = {
               ...dataset,
               parameters,
-              results
+              results,
             };
-            
+
             // Only add datasets with results
             if (parsedDataset.results) {
               parsedDatasets.push(parsedDataset);
               this.logProgress(`Successfully parsed dataset: ${dataset.name}`);
             } else {
-              this.logProgress(`Skipping dataset ${dataset.name} - no results found`);
+              this.logProgress(
+                `Skipping dataset ${dataset.name} - no results found`
+              );
             }
           } catch (error) {
-            this.errorHandler.logError(error as Error, `Error parsing dataset: ${dataset.name}`);
-            
+            this.errorHandler.logError(
+              error as Error,
+              `Error parsing dataset: ${dataset.name}`
+            );
+
             // If configured to continue on error, skip this dataset
             if (!this.config.continueOnError) {
               throw error;
@@ -476,14 +562,17 @@ The analysis could not be completed successfully. Any partial results may be inc
           }
         }
       }
-      
+
       return parsedDatasets;
     } finally {
       // End performance monitoring for this operation
       if (this.performanceMonitor) {
-        const duration = this.performanceMonitor.endOperation('parseDatasetFiles');
+        const duration =
+          this.performanceMonitor.endOperation("parseDatasetFiles");
         if (duration) {
-          this.logProgress(`Dataset parsing completed in ${duration.toFixed(2)}ms`);
+          this.logProgress(
+            `Dataset parsing completed in ${duration.toFixed(2)}ms`
+          );
         }
       }
     }
@@ -498,216 +587,288 @@ The analysis could not be completed successfully. Any partial results may be inc
   private async performAnalysis(datasets: Dataset[]): Promise<AnalysisResults> {
     // Execute analyzer plugins if available
     let pluginResults = [];
-    if (typeof (this as any).pluginManager !== 'undefined') {
+    if (this.pluginManager) {
       try {
-        pluginResults = await (this as any).pluginManager.executePlugins('analyzer', { datasets });
+        pluginResults = await this.pluginManager.executePlugins("analyzer", {
+          datasets,
+        });
       } catch (error) {
-        console.error('Error executing analyzer plugins:', error);
+        console.error("Error executing analyzer plugins:", error);
       }
     }
     // Start performance monitoring for this operation
     if (this.performanceMonitor) {
-      this.performanceMonitor.startOperation('performAnalysis');
+      this.performanceMonitor.startOperation("performAnalysis");
     }
-    
+
     try {
       let iperfAnalysis, dnsAnalysis, configurationComparison, anomalies;
-      
+
       // Use parallel processing if enabled
       if (this.config.useParallelProcessing) {
-        this.logProgress('Using parallel processing for analysis tasks');
-        
+        this.logProgress("Using parallel processing for analysis tasks");
+
         // Run analysis tasks in parallel
-        [iperfAnalysis, dnsAnalysis, configurationComparison, anomalies] = await Promise.all([
-          // Task 1: Analyze iperf performance
-          (async () => {
-            if (this.performanceMonitor) {
-              this.performanceMonitor.startOperation('analyzeIperfPerformance');
-            }
-            this.logProgress('Analyzing iperf performance...');
-            try {
-              const result = await this.analysisEngine.analyzeIperfPerformance(datasets);
+        [iperfAnalysis, dnsAnalysis, configurationComparison, anomalies] =
+          await Promise.all([
+            // Task 1: Analyze iperf performance
+            (async () => {
               if (this.performanceMonitor) {
-                const duration = this.performanceMonitor.endOperation('analyzeIperfPerformance');
-                if (duration) {
-                  this.logProgress(`Iperf analysis completed in ${duration.toFixed(2)}ms`);
-                }
+                this.performanceMonitor.startOperation(
+                  "analyzeIperfPerformance"
+                );
               }
-              return result;
-            } catch (error) {
-              this.errorHandler.logError(error as Error, 'Error analyzing iperf performance');
-              throw error;
-            }
-          })(),
-          
-          // Task 2: Analyze DNS performance
-          (async () => {
-            if (this.performanceMonitor) {
-              this.performanceMonitor.startOperation('analyzeDnsPerformance');
-            }
-            this.logProgress('Analyzing DNS performance...');
-            try {
-              const result = await this.analysisEngine.analyzeDnsPerformance(datasets);
+              this.logProgress("Analyzing iperf performance...");
+              try {
+                const result =
+                  await this.analysisEngine.analyzeIperfPerformance(datasets);
+                if (this.performanceMonitor) {
+                  const duration = this.performanceMonitor.endOperation(
+                    "analyzeIperfPerformance"
+                  );
+                  if (duration) {
+                    this.logProgress(
+                      `Iperf analysis completed in ${duration.toFixed(2)}ms`
+                    );
+                  }
+                }
+                return result;
+              } catch (error) {
+                this.errorHandler.logError(
+                  error as Error,
+                  "Error analyzing iperf performance"
+                );
+                throw error;
+              }
+            })(),
+
+            // Task 2: Analyze DNS performance
+            (async () => {
               if (this.performanceMonitor) {
-                const duration = this.performanceMonitor.endOperation('analyzeDnsPerformance');
-                if (duration) {
-                  this.logProgress(`DNS analysis completed in ${duration.toFixed(2)}ms`);
-                }
+                this.performanceMonitor.startOperation("analyzeDnsPerformance");
               }
-              return result;
-            } catch (error) {
-              this.errorHandler.logError(error as Error, 'Error analyzing DNS performance');
-              throw error;
-            }
-          })(),
-          
-          // Task 3: Compare configurations
-          (async () => {
-            if (this.performanceMonitor) {
-              this.performanceMonitor.startOperation('compareConfigurations');
-            }
-            this.logProgress('Comparing configurations...');
-            try {
-              const result = await this.analysisEngine.compareConfigurations(datasets);
+              this.logProgress("Analyzing DNS performance...");
+              try {
+                const result = await this.analysisEngine.analyzeDnsPerformance(
+                  datasets
+                );
+                if (this.performanceMonitor) {
+                  const duration = this.performanceMonitor.endOperation(
+                    "analyzeDnsPerformance"
+                  );
+                  if (duration) {
+                    this.logProgress(
+                      `DNS analysis completed in ${duration.toFixed(2)}ms`
+                    );
+                  }
+                }
+                return result;
+              } catch (error) {
+                this.errorHandler.logError(
+                  error as Error,
+                  "Error analyzing DNS performance"
+                );
+                throw error;
+              }
+            })(),
+
+            // Task 3: Compare configurations
+            (async () => {
               if (this.performanceMonitor) {
-                const duration = this.performanceMonitor.endOperation('compareConfigurations');
-                if (duration) {
-                  this.logProgress(`Configuration comparison completed in ${duration.toFixed(2)}ms`);
-                }
+                this.performanceMonitor.startOperation("compareConfigurations");
               }
-              return result;
-            } catch (error) {
-              this.errorHandler.logError(error as Error, 'Error comparing configurations');
-              throw error;
-            }
-          })(),
-          
-          // Task 4: Detect anomalies
-          (async () => {
-            if (this.performanceMonitor) {
-              this.performanceMonitor.startOperation('detectAnomalies');
-            }
-            this.logProgress('Detecting performance anomalies...');
-            try {
-              const result = await this.analysisEngine.detectAnomalies(datasets);
+              this.logProgress("Comparing configurations...");
+              try {
+                const result = await this.analysisEngine.compareConfigurations(
+                  datasets
+                );
+                if (this.performanceMonitor) {
+                  const duration = this.performanceMonitor.endOperation(
+                    "compareConfigurations"
+                  );
+                  if (duration) {
+                    this.logProgress(
+                      `Configuration comparison completed in ${duration.toFixed(
+                        2
+                      )}ms`
+                    );
+                  }
+                }
+                return result;
+              } catch (error) {
+                this.errorHandler.logError(
+                  error as Error,
+                  "Error comparing configurations"
+                );
+                throw error;
+              }
+            })(),
+
+            // Task 4: Detect anomalies
+            (async () => {
               if (this.performanceMonitor) {
-                const duration = this.performanceMonitor.endOperation('detectAnomalies');
-                if (duration) {
-                  this.logProgress(`Anomaly detection completed in ${duration.toFixed(2)}ms`);
-                }
+                this.performanceMonitor.startOperation("detectAnomalies");
               }
-              return result;
-            } catch (error) {
-              this.errorHandler.logError(error as Error, 'Error detecting anomalies');
-              throw error;
-            }
-          })()
-        ]);
+              this.logProgress("Detecting performance anomalies...");
+              try {
+                const result = await this.analysisEngine.detectAnomalies(
+                  datasets
+                );
+                if (this.performanceMonitor) {
+                  const duration =
+                    this.performanceMonitor.endOperation("detectAnomalies");
+                  if (duration) {
+                    this.logProgress(
+                      `Anomaly detection completed in ${duration.toFixed(2)}ms`
+                    );
+                  }
+                }
+                return result;
+              } catch (error) {
+                this.errorHandler.logError(
+                  error as Error,
+                  "Error detecting anomalies"
+                );
+                throw error;
+              }
+            })(),
+          ]);
       } else {
         // Sequential processing
         // Step 1: Analyze iperf performance
         if (this.performanceMonitor) {
-          this.performanceMonitor.startOperation('analyzeIperfPerformance');
+          this.performanceMonitor.startOperation("analyzeIperfPerformance");
         }
-        this.logProgress('Analyzing iperf performance...');
-        iperfAnalysis = await this.analysisEngine.analyzeIperfPerformance(datasets);
+        this.logProgress("Analyzing iperf performance...");
+        iperfAnalysis = await this.analysisEngine.analyzeIperfPerformance(
+          datasets
+        );
         if (this.performanceMonitor) {
-          const duration = this.performanceMonitor.endOperation('analyzeIperfPerformance');
+          const duration = this.performanceMonitor.endOperation(
+            "analyzeIperfPerformance"
+          );
           if (duration) {
-            this.logProgress(`Iperf analysis completed in ${duration.toFixed(2)}ms`);
+            this.logProgress(
+              `Iperf analysis completed in ${duration.toFixed(2)}ms`
+            );
           }
         }
-        
+
         // Step 2: Analyze DNS performance
         if (this.performanceMonitor) {
-          this.performanceMonitor.startOperation('analyzeDnsPerformance');
+          this.performanceMonitor.startOperation("analyzeDnsPerformance");
         }
-        this.logProgress('Analyzing DNS performance...');
+        this.logProgress("Analyzing DNS performance...");
         dnsAnalysis = await this.analysisEngine.analyzeDnsPerformance(datasets);
         if (this.performanceMonitor) {
-          const duration = this.performanceMonitor.endOperation('analyzeDnsPerformance');
+          const duration = this.performanceMonitor.endOperation(
+            "analyzeDnsPerformance"
+          );
           if (duration) {
-            this.logProgress(`DNS analysis completed in ${duration.toFixed(2)}ms`);
+            this.logProgress(
+              `DNS analysis completed in ${duration.toFixed(2)}ms`
+            );
           }
         }
-        
+
         // Step 3: Compare configurations
         if (this.performanceMonitor) {
-          this.performanceMonitor.startOperation('compareConfigurations');
+          this.performanceMonitor.startOperation("compareConfigurations");
         }
-        this.logProgress('Comparing configurations...');
-        configurationComparison = await this.analysisEngine.compareConfigurations(datasets);
+        this.logProgress("Comparing configurations...");
+        configurationComparison =
+          await this.analysisEngine.compareConfigurations(datasets);
         if (this.performanceMonitor) {
-          const duration = this.performanceMonitor.endOperation('compareConfigurations');
+          const duration = this.performanceMonitor.endOperation(
+            "compareConfigurations"
+          );
           if (duration) {
-            this.logProgress(`Configuration comparison completed in ${duration.toFixed(2)}ms`);
+            this.logProgress(
+              `Configuration comparison completed in ${duration.toFixed(2)}ms`
+            );
           }
         }
-        
+
         // Step 4: Detect anomalies
         if (this.performanceMonitor) {
-          this.performanceMonitor.startOperation('detectAnomalies');
+          this.performanceMonitor.startOperation("detectAnomalies");
         }
-        this.logProgress('Detecting performance anomalies...');
+        this.logProgress("Detecting performance anomalies...");
         anomalies = await this.analysisEngine.detectAnomalies(datasets);
         if (this.performanceMonitor) {
-          const duration = this.performanceMonitor.endOperation('detectAnomalies');
+          const duration =
+            this.performanceMonitor.endOperation("detectAnomalies");
           if (duration) {
-            this.logProgress(`Anomaly detection completed in ${duration.toFixed(2)}ms`);
+            this.logProgress(
+              `Anomaly detection completed in ${duration.toFixed(2)}ms`
+            );
           }
         }
       }
-      
+
       // Step 5: Create executive summary
       if (this.performanceMonitor) {
-        this.performanceMonitor.startOperation('createExecutiveSummary');
+        this.performanceMonitor.startOperation("createExecutiveSummary");
       }
-      this.logProgress('Creating executive summary...');
+      this.logProgress("Creating executive summary...");
       const summary = this.createExecutiveSummary(
-        datasets, 
-        iperfAnalysis, 
-        dnsAnalysis, 
-        configurationComparison, 
+        datasets,
+        iperfAnalysis,
+        dnsAnalysis,
+        configurationComparison,
         anomalies
       );
       if (this.performanceMonitor) {
-        const duration = this.performanceMonitor.endOperation('createExecutiveSummary');
+        const duration = this.performanceMonitor.endOperation(
+          "createExecutiveSummary"
+        );
         if (duration) {
-          this.logProgress(`Executive summary created in ${duration.toFixed(2)}ms`);
+          this.logProgress(
+            `Executive summary created in ${duration.toFixed(2)}ms`
+          );
         }
       }
-      
+
       // Combine all analysis results
       return {
         iperfAnalysis,
         dnsAnalysis,
         configurationComparison,
         anomalies,
-        summary
+        summary,
       };
     } catch (error) {
-      this.errorHandler.logError(error as Error, 'Error performing analysis');
+      this.errorHandler.logError(error as Error, "Error performing analysis");
       throw error;
     } finally {
       // End performance monitoring for this operation
       if (this.performanceMonitor) {
-        const duration = this.performanceMonitor.endOperation('performAnalysis');
+        const duration =
+          this.performanceMonitor.endOperation("performAnalysis");
         if (duration) {
           this.logProgress(`Analysis completed in ${duration.toFixed(2)}ms`);
-          
+
           // Generate performance report if monitoring is enabled
           if (this.config.enablePerformanceMonitoring) {
             const perfReport = this.performanceMonitor.generateReport();
-            this.logProgress('Performance report generated');
-            
+            this.logProgress("Performance report generated");
+
             // Save performance report if output path is provided
             if (this.config.reportOutputPath) {
-              const perfReportPath = this.config.reportOutputPath.replace(/\.md$/, '-performance.md');
+              const perfReportPath = this.config.reportOutputPath.replace(
+                /\.md$/,
+                "-performance.md"
+              );
               try {
                 fs.writeFileSync(perfReportPath, perfReport);
-                this.logProgress(`Performance report saved to ${perfReportPath}`);
+                this.logProgress(
+                  `Performance report saved to ${perfReportPath}`
+                );
               } catch (error) {
-                this.errorHandler.logError(error as Error, 'Error saving performance report');
+                this.errorHandler.logError(
+                  error as Error,
+                  "Error saving performance report"
+                );
               }
             }
           }
@@ -734,106 +895,183 @@ The analysis could not be completed successfully. Any partial results may be inc
     anomalies: any[]
   ): ExecutiveSummary {
     // Find optimal configuration
-    const optimalConfig = configurationComparison.overallRanking.length > 0
-      ? configurationComparison.overallRanking.sort((a: any, b: any) => a.rank - b.rank)[0].configuration
-      : 'Unknown';
-    
+    const optimalConfig =
+      configurationComparison.overallRanking.length > 0
+        ? configurationComparison.overallRanking.sort(
+            (a: any, b: any) => a.rank - b.rank
+          )[0].configuration
+        : "Unknown";
+
     // Generate key findings
     const keyFindings: string[] = [];
-    
+
     // Add MTU impact finding
-    if (configurationComparison.mtuImpact && configurationComparison.mtuImpact.optimalMtu) {
-      keyFindings.push(`MTU ${configurationComparison.mtuImpact.optimalMtu} provides the best overall network performance.`);
+    if (
+      configurationComparison.mtuImpact &&
+      configurationComparison.mtuImpact.optimalMtu
+    ) {
+      keyFindings.push(
+        `MTU ${configurationComparison.mtuImpact.optimalMtu} provides the best overall network performance.`
+      );
     }
-    
+
     // Add AWS logging impact finding
     if (configurationComparison.loggingImpact) {
       const impact = configurationComparison.loggingImpact.performanceImpact;
-      const direction = impact > 0 ? 'improves' : 'degrades';
+      const direction = impact > 0 ? "improves" : "degrades";
       const magnitude = Math.abs(impact);
-      
-      if (magnitude > 0.05) { // 5% threshold for significance
-        keyFindings.push(`AWS logging ${direction} overall performance by approximately ${(magnitude * 100).toFixed(1)}%.`);
+
+      if (magnitude > 0.05) {
+        // 5% threshold for significance
+        keyFindings.push(
+          `AWS logging ${direction} overall performance by approximately ${(
+            magnitude * 100
+          ).toFixed(1)}%.`
+        );
       } else {
-        keyFindings.push('AWS logging has minimal impact on overall network performance.');
+        keyFindings.push(
+          "AWS logging has minimal impact on overall network performance."
+        );
       }
     }
-    
+
     // Add bandwidth finding
-    if (iperfAnalysis.bandwidthComparison && iperfAnalysis.bandwidthComparison.length > 0) {
-      const bestBandwidth = [...iperfAnalysis.bandwidthComparison].sort((a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps)[0];
-      keyFindings.push(`Highest average bandwidth of ${bestBandwidth.avgBandwidthMbps.toFixed(2)} Mbps achieved with ${bestBandwidth.configuration} configuration.`);
+    if (
+      iperfAnalysis.bandwidthComparison &&
+      iperfAnalysis.bandwidthComparison.length > 0
+    ) {
+      const bestBandwidth = [...iperfAnalysis.bandwidthComparison].sort(
+        (a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps
+      )[0];
+      keyFindings.push(
+        `Highest average bandwidth of ${bestBandwidth.avgBandwidthMbps.toFixed(
+          2
+        )} Mbps achieved with ${bestBandwidth.configuration} configuration.`
+      );
     }
-    
+
     // Add DNS performance finding
-    if (dnsAnalysis.performanceMetrics && dnsAnalysis.performanceMetrics.length > 0) {
-      const bestDns = [...dnsAnalysis.performanceMetrics].sort((a, b) => a.avgResponseTimeMs - b.avgResponseTimeMs)[0];
-      keyFindings.push(`Fastest DNS resolution (${bestDns.avgResponseTimeMs.toFixed(2)} ms) achieved with ${bestDns.configuration} configuration.`);
+    if (
+      dnsAnalysis.performanceMetrics &&
+      dnsAnalysis.performanceMetrics.length > 0
+    ) {
+      const bestDns = [...dnsAnalysis.performanceMetrics].sort(
+        (a, b) => a.avgResponseTimeMs - b.avgResponseTimeMs
+      )[0];
+      keyFindings.push(
+        `Fastest DNS resolution (${bestDns.avgResponseTimeMs.toFixed(
+          2
+        )} ms) achieved with ${bestDns.configuration} configuration.`
+      );
     }
-    
+
     // Add anomaly finding if any exist
     if (anomalies && anomalies.length > 0) {
-      const highSeverity = anomalies.filter(a => a.severity === 'high');
+      const highSeverity = anomalies.filter((a) => a.severity === "high");
       if (highSeverity.length > 0) {
-        keyFindings.push(`Detected ${highSeverity.length} high severity performance anomalies that require attention.`);
+        keyFindings.push(
+          `Detected ${highSeverity.length} high severity performance anomalies that require attention.`
+        );
       }
     }
-    
+
     // Generate recommendations
     const recommendations: string[] = [];
-    
+
     // Add MTU recommendations
-    if (configurationComparison.mtuImpact && configurationComparison.mtuImpact.recommendations) {
-      recommendations.push(...configurationComparison.mtuImpact.recommendations);
+    if (
+      configurationComparison.mtuImpact &&
+      configurationComparison.mtuImpact.recommendations
+    ) {
+      recommendations.push(
+        ...configurationComparison.mtuImpact.recommendations
+      );
     }
-    
+
     // Add logging recommendations
-    if (configurationComparison.loggingImpact && configurationComparison.loggingImpact.recommendations) {
-      recommendations.push(...configurationComparison.loggingImpact.recommendations);
+    if (
+      configurationComparison.loggingImpact &&
+      configurationComparison.loggingImpact.recommendations
+    ) {
+      recommendations.push(
+        ...configurationComparison.loggingImpact.recommendations
+      );
     }
-    
+
     // Add anomaly recommendations
     if (anomalies && anomalies.length > 0) {
       const highSeverityRecs = anomalies
-        .filter(a => a.severity === 'high')
-        .flatMap(a => a.recommendations);
-      
+        .filter((a) => a.severity === "high")
+        .flatMap((a) => a.recommendations);
+
       // Add unique recommendations
       const uniqueRecs = new Set(highSeverityRecs);
       recommendations.push(...uniqueRecs);
     }
-    
+
     // Generate performance highlights
     const performanceHighlights: string[] = [];
-    
+
     // Add bandwidth highlight
-    if (iperfAnalysis.bandwidthComparison && iperfAnalysis.bandwidthComparison.length > 1) {
-      const sorted = [...iperfAnalysis.bandwidthComparison].sort((a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps);
+    if (
+      iperfAnalysis.bandwidthComparison &&
+      iperfAnalysis.bandwidthComparison.length > 1
+    ) {
+      const sorted = [...iperfAnalysis.bandwidthComparison].sort(
+        (a, b) => b.avgBandwidthMbps - a.avgBandwidthMbps
+      );
       const best = sorted[0];
       const worst = sorted[sorted.length - 1];
-      const difference = ((best.avgBandwidthMbps - worst.avgBandwidthMbps) / worst.avgBandwidthMbps) * 100;
-      
-      performanceHighlights.push(`Bandwidth varies by up to ${difference.toFixed(1)}% across different configurations.`);
+      const difference =
+        ((best.avgBandwidthMbps - worst.avgBandwidthMbps) /
+          worst.avgBandwidthMbps) *
+        100;
+
+      performanceHighlights.push(
+        `Bandwidth varies by up to ${difference.toFixed(
+          1
+        )}% across different configurations.`
+      );
     }
-    
+
     // Add latency highlight
-    if (iperfAnalysis.latencyAnalysis && iperfAnalysis.latencyAnalysis.length > 0) {
-      const bestLatency = [...iperfAnalysis.latencyAnalysis].sort((a, b) => a.avgLatencyMs - b.avgLatencyMs)[0];
-      performanceHighlights.push(`Lowest average latency (${bestLatency.avgLatencyMs.toFixed(2)} ms) achieved with ${bestLatency.configuration} configuration.`);
+    if (
+      iperfAnalysis.latencyAnalysis &&
+      iperfAnalysis.latencyAnalysis.length > 0
+    ) {
+      const bestLatency = [...iperfAnalysis.latencyAnalysis].sort(
+        (a, b) => a.avgLatencyMs - b.avgLatencyMs
+      )[0];
+      performanceHighlights.push(
+        `Lowest average latency (${bestLatency.avgLatencyMs.toFixed(
+          2
+        )} ms) achieved with ${bestLatency.configuration} configuration.`
+      );
     }
-    
+
     // Add reliability highlight
-    if (iperfAnalysis.reliabilityMetrics && iperfAnalysis.reliabilityMetrics.length > 0) {
-      const bestReliability = [...iperfAnalysis.reliabilityMetrics].sort((a, b) => b.successRate - a.successRate)[0];
-      performanceHighlights.push(`Highest reliability (${(bestReliability.successRate * 100).toFixed(2)}% success rate) achieved with ${bestReliability.configuration} configuration.`);
+    if (
+      iperfAnalysis.reliabilityMetrics &&
+      iperfAnalysis.reliabilityMetrics.length > 0
+    ) {
+      const bestReliability = [...iperfAnalysis.reliabilityMetrics].sort(
+        (a, b) => b.successRate - a.successRate
+      )[0];
+      performanceHighlights.push(
+        `Highest reliability (${(bestReliability.successRate * 100).toFixed(
+          2
+        )}% success rate) achieved with ${
+          bestReliability.configuration
+        } configuration.`
+      );
     }
-    
+
     return {
       totalDatasets: datasets.length,
       keyFindings,
       recommendations,
       optimalConfiguration: optimalConfig,
-      performanceHighlights
+      performanceHighlights,
     };
   }
 
@@ -848,11 +1086,14 @@ The analysis could not be completed successfully. Any partial results may be inc
     try {
       // Ensure the directory exists
       await fs.ensureDir(path.dirname(outputPath));
-      
+
       // Write the report to the file
-      await fs.writeFile(outputPath, report, 'utf8');
+      await fs.writeFile(outputPath, report, "utf8");
     } catch (error) {
-      this.errorHandler.logError(error as Error, `Error saving report to ${outputPath}`);
+      this.errorHandler.logError(
+        error as Error,
+        `Error saving report to ${outputPath}`
+      );
       throw error;
     }
   }
@@ -869,133 +1110,125 @@ The analysis could not be completed successfully. Any partial results may be inc
   }
 }
 /**
- * Factory function to create a new NetworkPerformanceAnalyzer instance with default dependencies
+ * Factory function to create a new NetworkPerformanceAnalyzer instance with configuration and plugin support
  * @param config Configuration options for the analyzer
  * @returns A new NetworkPerformanceAnalyzer instance
  */
-export function createNetworkPerformanceAnalyzer(config: AnalyzerConfig = {}): NetworkPerformanceAnalyzer {
-  // Create a shared error handler for all components
-  const errorHandler = new DefaultErrorHandler({
-    logToFile: true,
-    logDirectory: './logs',
-    maxLogEntries: 1000
-  });
-  
-  // Create services with the shared error handler
-  const discoveryService = new DefaultDatasetDiscoveryService(errorHandler);
-  const dataParser = new DefaultDataParser(errorHandler);
-  const analysisEngine = new DefaultAnalysisEngine();
-  const reportGenerator = new DefaultReportGenerator();
-  
-  return new NetworkPerformanceAnalyzer(
-    discoveryService,
-    dataParser,
-    analysisEngine,
-    reportGenerator,
-    errorHandler,
-    config
-  );
-}
-
-/**
- * Create a factory function for creating NetworkPerformanceAnalyzer instances with configuration and plugin support
- * @param config Configuration options for the analyzer
- * @returns A new NetworkPerformanceAnalyzer instance
- */
-export function createNetworkPerformanceAnalyzer(config: AnalyzerConfig = {}): NetworkPerformanceAnalyzer {
+export function createNetworkPerformanceAnalyzer(
+  config: AnalyzerConfig = {}
+): NetworkPerformanceAnalyzer {
   // Initialize configuration manager
   const configManager = new ConfigurationManager();
-  
+
   // Load configuration from file if provided
   if (config.configPath) {
     configManager.loadFromFile(config.configPath);
   }
-  
+
   // Set environment if provided
   if (config.environment) {
     configManager.setEnvironment(config.environment);
   }
-  
+
   // Merge provided config with loaded config
   configManager.update({
-    analysis: {
-      continueOnError: config.continueOnError,
-      logProgress: config.logProgress,
-      useParallelProcessing: config.useParallelProcessing,
-      maxParallelTasks: config.maxParallelTasks,
-      enablePerformanceMonitoring: config.enablePerformanceMonitoring,
-      memoryThresholdPercent: config.memoryThresholdPercent
-    },
-    anomalyThresholds: config.anomalyThresholds,
+    ...(config.continueOnError !== undefined || 
+       config.logProgress !== undefined || 
+       config.useParallelProcessing !== undefined || 
+       config.maxParallelTasks !== undefined || 
+       config.enablePerformanceMonitoring !== undefined || 
+       config.memoryThresholdPercent !== undefined 
+      ? {
+          analysis: {
+            ...(config.continueOnError !== undefined ? { continueOnError: config.continueOnError } : {}),
+            ...(config.logProgress !== undefined ? { logProgress: config.logProgress } : {}),
+            ...(config.useParallelProcessing !== undefined ? { useParallelProcessing: config.useParallelProcessing } : {}),
+            ...(config.maxParallelTasks !== undefined ? { maxParallelTasks: config.maxParallelTasks } : {}),
+            ...(config.enablePerformanceMonitoring !== undefined ? { enablePerformanceMonitoring: config.enablePerformanceMonitoring } : {}),
+            ...(config.memoryThresholdPercent !== undefined ? { memoryThresholdPercent: config.memoryThresholdPercent } : {})
+          }
+        } 
+      : {}),
+    ...(config.anomalyThresholds
+      ? { anomalyThresholds: { ...config.anomalyThresholds } }
+      : {}),
     reporting: {
-      outputDirectory: config.reportOutputPath ? path.dirname(config.reportOutputPath) : undefined,
-      defaultFilename: config.reportOutputPath ? path.basename(config.reportOutputPath) : undefined,
-      includeSections: config.includeSections
-    }
+      ...(config.reportOutputPath
+        ? {
+            outputDirectory: path.dirname(config.reportOutputPath),
+            defaultFilename: path.basename(config.reportOutputPath),
+          }
+        : {}),
+      ...(config.includeSections
+        ? { includeSections: config.includeSections }
+        : {}),
+    },
   });
-  
+
   // Get final analyzer config
   const analyzerConfig = configManager.getAnalyzerConfig();
-  
+
   // Initialize plugin manager
   const pluginManager = new PluginManager(configManager);
-  
+
   // Add plugin directories if provided
   if (config.pluginDirectories) {
     for (const dir of config.pluginDirectories) {
       pluginManager.addPluginDirectory(dir);
     }
   }
-  
+
   // Add default plugin directory
-  pluginManager.addPluginDirectory(path.join(__dirname, '../plugins'));
-  
+  pluginManager.addPluginDirectory(path.join(__dirname, "../plugins"));
+
   // Initialize template manager
   const templateManager = new ReportTemplateManager(configManager);
-  
+
   // Set active template if provided
   if (config.reportTemplateId) {
     try {
       templateManager.setActiveTemplate(config.reportTemplateId);
     } catch (error) {
-      console.warn(`Template ${config.reportTemplateId} not found, using default template`);
+      console.warn(
+        `Template ${config.reportTemplateId} not found, using default template`
+      );
     }
   }
-  
+
   // Create services
   const discoveryService = new DefaultDatasetDiscoveryService();
   const dataParser = new DefaultDataParser();
   const analysisEngine = new DefaultAnalysisEngine();
-  
+
   // Create custom report generator that integrates with plugins and templates
-  const reportGenerator = new class extends DefaultReportGenerator {
+  const reportGenerator = new (class extends DefaultReportGenerator {
     async generateReport(analysis: AnalysisResults): Promise<string> {
       try {
         // Execute reporter plugins
-        const pluginResults = await pluginManager.executePlugins('reporter', { 
+        const pluginResults = await pluginManager.executePlugins("reporter", {
           datasets: [], // We don't have the original datasets here
-          analysisResults: analysis
+          analysisResults: analysis,
         });
-        
+
         // Merge plugin results with analysis results
         const reportData = {
           ...analysis,
-          ...pluginResults.reduce((acc, result) => ({ ...acc, ...result }), {})
+          ...pluginResults.reduce((acc, result) => ({ ...acc, ...result }), {}),
         };
-        
+
         // Use template manager to generate report
         const template = templateManager.getActiveTemplate();
         return templateManager.applyTemplate(template, reportData);
       } catch (error) {
-        console.error('Error generating report with plugins:', error);
+        console.error("Error generating report with plugins:", error);
         // Fall back to default report generation
         return super.generateReport(analysis);
       }
     }
-  };
-  
+  })();
+
   const errorHandler = new DefaultErrorHandler();
-  
+
   // Create analyzer with configured services
   const analyzer = new NetworkPerformanceAnalyzer(
     discoveryService,
@@ -1005,21 +1238,25 @@ export function createNetworkPerformanceAnalyzer(config: AnalyzerConfig = {}): N
     errorHandler,
     analyzerConfig
   );
-  
+
   // Discover and load plugins
   (async () => {
     try {
       await pluginManager.discoverPlugins();
       await pluginManager.loadEnabledPlugins();
-      
+
       const enabledPlugins = pluginManager.getEnabledPlugins();
       if (enabledPlugins.length > 0 && analyzerConfig.logProgress) {
-        console.log(`Loaded ${enabledPlugins.length} plugins: ${enabledPlugins.map(p => p.name).join(', ')}`);
+        console.log(
+          `Loaded ${enabledPlugins.length} plugins: ${enabledPlugins
+            .map((p) => p.name)
+            .join(", ")}`
+        );
       }
     } catch (error) {
-      console.error('Error loading plugins:', error);
+      console.error("Error loading plugins:", error);
     }
   })();
-  
+
   return analyzer;
 }
