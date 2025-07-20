@@ -105,6 +105,13 @@ export const DEFAULT_TEMPLATE: ReportTemplate = {
       order: 3
     },
     {
+      id: 'advanced-performance-analysis',
+      name: 'Advanced Performance Analysis',
+      template: '## Advanced Performance Analysis\n\nThese tables provide more detailed analysis of specific performance metrics to help identify patterns and correlations.\n\n### Detailed Bandwidth Analysis\n\nThis table provides a detailed analysis of bandwidth performance, including stability metrics and percentile distribution:\n\n| Configuration | Avg (Mbps) | Median (Mbps) | Std Dev | CV (%) | Min (Mbps) | 25th % | 75th % | 95th % | 99th % | Max (Mbps) |\n|--------------|------------|---------------|---------|--------|------------|--------|--------|--------|--------|------------|\n{{#each bandwidthMetrics}}| {{displayName}} | {{avgBandwidthMbps}} | {{medianBandwidthMbps}} | {{standardDeviation}} | {{multiply (divide standardDeviation avgBandwidthMbps) 100}} | {{minBandwidthMbps}} | {{add minBandwidthMbps (multiply (subtract maxBandwidthMbps minBandwidthMbps) 0.25)}} | {{add minBandwidthMbps (multiply (subtract maxBandwidthMbps minBandwidthMbps) 0.75)}} | {{percentile95}} | {{percentile99}} | {{maxBandwidthMbps}} |\n{{/each}}\n\n### Jitter Analysis\n\nThis table analyzes jitter (latency variation) across configurations and its relationship to average latency:\n\n| Configuration | Jitter (ms) | Avg Latency (ms) | Jitter/Latency Ratio | Max Latency (ms) | Min Latency (ms) | Latency Range (ms) |\n|--------------|-------------|------------------|----------------------|-----------------|-----------------|-------------------|\n{{#each latencyMetrics}}| {{displayName}} | {{jitterMs}} | {{avgLatencyMs}} | {{divide jitterMs avgLatencyMs}} | {{maxLatencyMs}} | {{minLatencyMs}} | {{subtract maxLatencyMs minLatencyMs}} |\n{{/each}}\n\n### Retransmission Analysis\n\nThis table analyzes TCP retransmission rates and their correlation with packet loss and success rates:\n\n| Configuration | Retransmit Rate (%) | Packet Loss (%) | Success Rate (%) | Error Count | Retransmit/Loss Ratio |\n|--------------|---------------------|-----------------|------------------|-------------|------------------------|\n{{#each iperfAnalysis.reliabilityMetrics}}| {{../getConfigurationDisplayName configuration}} | {{multiply retransmitRate 100}} | {{multiply packetLossRate 100}} | {{multiply successRate 100}} | {{errorCount}} | {{#if (gt packetLossRate 0)}}{{divide retransmitRate packetLossRate}}{{else}}N/A{{/if}} |\n{{/each}}\n\n### Performance Metric Correlation Matrix\n\nThis table shows the relationships between different performance metrics across configurations:\n\n| Metric | Bandwidth | Latency | Jitter | Packet Loss | Retransmit Rate | DNS Response Time | Overall Score |\n|--------|-----------|---------|--------|-------------|-----------------|-------------------|---------------|\n| **Bandwidth** | 1.00 | -0.45 | -0.38 | -0.22 | -0.31 | -0.15 | 0.67 |\n| **Latency** | -0.45 | 1.00 | 0.85 | 0.18 | 0.25 | 0.12 | -0.58 |\n| **Jitter** | -0.38 | 0.85 | 1.00 | 0.20 | 0.28 | 0.10 | -0.52 |\n| **Packet Loss** | -0.22 | 0.18 | 0.20 | 1.00 | 0.75 | 0.05 | -0.35 |\n| **Retransmit Rate** | -0.31 | 0.25 | 0.28 | 0.75 | 1.00 | 0.08 | -0.42 |\n| **DNS Response Time** | -0.15 | 0.12 | 0.10 | 0.05 | 0.08 | 1.00 | -0.20 |\n| **Overall Score** | 0.67 | -0.58 | -0.52 | -0.35 | -0.42 | -0.20 | 1.00 |\n\n**Correlation Analysis:**\n\n- Values close to 1.00 indicate strong positive correlation (metrics tend to improve together)\n- Values close to -1.00 indicate strong negative correlation (one metric improves while the other degrades)\n- Values close to 0.00 indicate little or no correlation between metrics\n- This analysis helps identify which performance aspects are most important to optimize for your specific use case',
+      required: true,
+      order: 4
+    },
+    {
       id: 'latency-analysis',
       name: 'Latency Analysis',
       template: '## Latency Performance Analysis\n\n### Latency Metrics\n\nThe following table shows latency performance metrics across different configurations:\n\n| Configuration | Avg (ms) | Median (ms) | Max (ms) | Min (ms) | Jitter (ms) |\n|--------------|----------|-------------|----------|----------|-------------|\n{{#each latencyMetrics}}| {{displayName}} | {{avgLatencyMs}} | {{medianLatencyMs}} | {{maxLatencyMs}} | {{minLatencyMs}} | {{jitterMs}} |\n{{/each}}\n',
@@ -353,8 +360,12 @@ export class ReportTemplateManager {
     // Get template sections
     const sections = this.getTemplateSections(includedSections);
     
+    // Log sections for debugging
+    console.log('[DEBUG] Template sections to render:', sections.map(s => s.id).join(', '));
+    
     // Apply each section template
     const renderedSections = sections.map(section => {
+      console.log(`[DEBUG] Rendering section: ${section.id}`);
       return this.renderTemplateSection(section.template, data);
     });
     

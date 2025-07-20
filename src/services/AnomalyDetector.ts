@@ -519,9 +519,17 @@ export class AnomalyDetector {
           }
         });
         
+        // If there are too many affected configurations, use a more descriptive name
+        let configurationName: string;
+        if (affectedConfigs.length > 3) {
+          configurationName = "All Configurations";
+        } else {
+          configurationName = affectedConfigs.join(', ');
+        }
+        
         anomalies.push({
           type: 'dns_failure',
-          configuration: affectedConfigs.join(', '),
+          configuration: configurationName,
           description: `Consistently slow DNS resolution for domain "${domain}" (${avgResponseTime.toFixed(2)} ms)`,
           severity,
           affectedMetrics: ['responseTimeMs', 'domain'],
@@ -543,6 +551,12 @@ export class AnomalyDetector {
    * @returns A descriptive name
    */
   private getDescriptiveConfigName(configName: string): string {
+    // For dataset names like "dataset-20250717_113356", we should return the original name
+    // as the NetworkPerformanceAnalyzer will handle the display name mapping
+    if (configName.startsWith('dataset-')) {
+      return configName;
+    }
+    
     // If the configuration name already has a descriptive format, return it
     if (configName.includes('-mtu') && (configName.includes('-aws-logs_') || configName.includes('-logging_'))) {
       return configName.replace('-aws-logs_', '-logging_');

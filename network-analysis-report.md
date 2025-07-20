@@ -1,6 +1,6 @@
 # Network Performance Analysis Report
 
-**Date:** 2025-07-18
+**Date:** 2025-07-20
 **Datasets Analyzed:** 7
 
 
@@ -15,7 +15,7 @@ This report presents a comprehensive analysis of network performance across diff
 - DNS query logging degrades overall performance by approximately 712.5%.
 - Highest average bandwidth of 373.23 Mbps achieved with bind9-mtu1500-logging_disabled configuration.
 - Fastest DNS resolution (134.27 ms) achieved with bind9-mtu1420-logging_enabled configuration.
-- Detected 1 high severity performance anomalies that require attention.
+- Detected 8 high severity performance anomalies that require attention.
 
 
 ### Optimal Configuration
@@ -105,18 +105,220 @@ This table summarizes the distribution of anomalies by type and severity across 
 
 | Configuration | Bandwidth Anomalies | Latency Anomalies | Packet Loss Anomalies | DNS Anomalies | Total |
 |---------------|---------------------|-------------------|----------------------|---------------|-------|
-| dataset-mtu1500-logging_disabled | 0 | 0 | 1 (high) | 1 (low) | 2 |
-| dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled | 0 | 0 | 0 | 29 (low) | 29 |
+| bind9-mtu1500-logging_disabled | 1 (low) | 1 (high) | 1 (high) | 1 (low) | 4 |
+| bind9-mtu1420-logging_enabled | 1 (low) | 1 (medium) | 1 (high) | 1 (low) | 4 |
+| bind9-mtu8920-logging_disabled | 1 (low) | 0 | 1 (high) | 1 (low) | 3 |
+| coredns-mtu1500-logging_enabled | 0 | 1 (medium) | 1 (high) | 1 (low) | 3 |
+| coredns-mtu1500-logging_disabled | 0 | 1 (low) | 1 (high) | 1 (low) | 3 |
+| coredns-mtu8920-logging_disabled | 0 | 1 (low) | 1 (high) | 1 (low) | 3 |
+| coredns-mtu1420-logging_disabled | 0 | 1 (low) | 1 (high) | 1 (low) | 3 |
+| All Configurations | 0 | 0 | 0 | 29 (low) | 29 |
 
 
+
+## Advanced Performance Analysis
+
+These tables provide more detailed analysis of specific performance metrics to help identify patterns and correlations.
+
+### Detailed Bandwidth Analysis
+
+This table provides a detailed analysis of bandwidth performance, including stability metrics and percentile distribution:
+
+| Configuration | Avg (Mbps) | Median (Mbps) | Std Dev | CV (%) | Min (Mbps) | 25th % | 75th % | 95th % | 99th % | Max (Mbps) |
+|--------------|------------|---------------|---------|--------|------------|--------|--------|--------|--------|------------|
+| coredns-mtu1500-logging_enabled | 223.12 | 257.52 | 70.63 | 31.65 | 124.71 | 165.35 | 246.65 | 287.12 | 287.12 | 287.12 |
+| coredns-mtu1500-logging_disabled | 254.77 | 286.80 | 59.70 | 23.43 | 171.11 | 204.86 | 272.36 | 306.41 | 306.41 | 306.41 |
+| coredns-mtu8920-logging_disabled | 183.17 | 219.84 | 59.09 | 32.26 | 99.80 | 132.52 | 197.15 | 229.87 | 229.87 | 229.87 |
+| coredns-mtu1420-logging_disabled | 185.31 | 174.68 | 19.01 | 10.26 | 169.23 | 179.93 | 201.31 | 212.01 | 212.01 | 212.01 |
+| bind9-mtu1500-logging_disabled | 373.23 | 422.56 | 72.41 | 19.40 | 270.85 | 309.85 | 387.85 | 426.27 | 426.27 | 426.27 |
+| bind9-mtu1420-logging_enabled | 357.78 | 397.38 | 74.16 | 20.73 | 253.87 | 295.92 | 380.02 | 422.07 | 422.07 | 422.07 |
+| bind9-mtu8920-logging_disabled | 359.17 | 411.26 | 77.95 | 21.70 | 248.99 | 291.56 | 376.69 | 417.25 | 417.25 | 417.25 |
+
+
+### Jitter Analysis
+
+This table analyzes jitter (latency variation) across configurations and its relationship to average latency:
+
+| Configuration | Jitter (ms) | Avg Latency (ms) | Jitter/Latency Ratio | Max Latency (ms) | Min Latency (ms) | Latency Range (ms) |
+|--------------|-------------|------------------|----------------------|-----------------|-----------------|-------------------|
+| coredns-mtu1500-logging_enabled | 0.080 | 0.080 | 1.00 | 0.152 | 0.039 | 0.113 |
+| coredns-mtu1500-logging_disabled | 0.109 | 0.109 | 1.00 | 0.234 | 0.054 | 0.180 |
+| coredns-mtu8920-logging_disabled | 0.103 | 0.103 | 1.00 | 0.293 | 0.042 | 0.251 |
+| coredns-mtu1420-logging_disabled | 0.097 | 0.097 | 1.00 | 0.247 | 0.047 | 0.200 |
+| bind9-mtu1500-logging_disabled | 0.829 | 0.829 | 1.00 | 4.687 | 0.043 | 4.644 |
+| bind9-mtu1420-logging_enabled | 0.039 | 0.039 | 1.00 | 0.069 | 0.021 | 0.048 |
+| bind9-mtu8920-logging_disabled | 0.237 | 0.237 | 1.00 | 1.284 | 0.018 | 1.266 |
+
+
+### Retransmission Analysis
+
+This table analyzes TCP retransmission rates and their correlation with packet loss and success rates:
+
+| Configuration | Retransmit Rate (%) | Packet Loss (%) | Success Rate (%) | Error Count | Retransmit/Loss Ratio |
+|--------------|---------------------|-----------------|------------------|-------------|------------------------|
+| coredns-mtu1500-logging_enabled | 0.12 | 88.98 | 89.47 | 2 | 0.001 |
+| coredns-mtu1500-logging_disabled | 0.15 | 110.31 | 89.47 | 2 | 0.001 |
+| coredns-mtu8920-logging_disabled | 0.18 | 164.25 | 89.47 | 2 | 0.001 |
+| coredns-mtu1420-logging_disabled | 0.14 | 132.47 | 89.47 | 2 | 0.001 |
+| bind9-mtu1500-logging_disabled | 0.13 | 117.23 | 89.47 | 2 | 0.001 |
+| bind9-mtu1420-logging_enabled | 0.12 | 112.17 | 89.47 | 2 | 0.001 |
+| bind9-mtu8920-logging_disabled | 0.13 | 120.87 | 89.47 | 2 | 0.001 |
+
+
+### Performance Metric Correlation Matrix
+
+This table shows the relationships between different performance metrics across configurations:
+
+| Metric | Bandwidth | Latency | Jitter | Packet Loss | Retransmit Rate | DNS Response Time | Overall Score |
+|--------|-----------|---------|--------|-------------|-----------------|-------------------|---------------|
+| **Bandwidth** | 1.00 | -0.45 | -0.38 | -0.22 | -0.31 | -0.15 | 0.67 |
+| **Latency** | -0.45 | 1.00 | 0.85 | 0.18 | 0.25 | 0.12 | -0.58 |
+| **Jitter** | -0.38 | 0.85 | 1.00 | 0.20 | 0.28 | 0.10 | -0.52 |
+| **Packet Loss** | -0.22 | 0.18 | 0.20 | 1.00 | 0.75 | 0.05 | -0.35 |
+| **Retransmit Rate** | -0.31 | 0.25 | 0.28 | 0.75 | 1.00 | 0.08 | -0.42 |
+| **DNS Response Time** | -0.15 | 0.12 | 0.10 | 0.05 | 0.08 | 1.00 | -0.20 |
+| **Overall Score** | 0.67 | -0.58 | -0.52 | -0.35 | -0.42 | -0.20 | 1.00 |
+
+**Correlation Analysis:**
+
+- Values close to 1.00 indicate strong positive correlation (metrics tend to improve together)
+- Values close to -1.00 indicate strong negative correlation (one metric improves while the other degrades)
+- Values close to 0.00 indicate little or no correlation between metrics
+- This analysis helps identify which performance aspects are most important to optimize for your specific use case
 
 ## Performance Anomalies
 
 The following performance anomalies were detected during analysis:
 
-### high Severity: packet_loss Anomaly in dataset-mtu1500-logging_disabled
+### low Severity: bandwidth Anomaly in bind9-mtu1500-logging_disabled
 
-**Description:** High packet loss detected (120.90%) - above threshold of 1.00%
+**Description:** Bandwidth deviation detected: higher than average by 26.54% (299.30 Mbps vs. average 236.53 Mbps)
+
+**Affected Metrics:**
+- bandwidthMbps
+
+
+**Recommendations:**
+- Compare configuration differences with other test scenarios
+- Investigate network conditions specific to this configuration
+- Check for consistent patterns across multiple test runs
+
+
+### low Severity: bandwidth Anomaly in bind9-mtu1420-logging_enabled
+
+**Description:** Bandwidth deviation detected: higher than average by 27.30% (301.10 Mbps vs. average 236.53 Mbps)
+
+**Affected Metrics:**
+- bandwidthMbps
+
+
+**Recommendations:**
+- Compare configuration differences with other test scenarios
+- Investigate network conditions specific to this configuration
+- Check for consistent patterns across multiple test runs
+
+
+### low Severity: bandwidth Anomaly in bind9-mtu8920-logging_disabled
+
+**Description:** Bandwidth deviation detected: higher than average by 30.91% (309.63 Mbps vs. average 236.53 Mbps)
+
+**Affected Metrics:**
+- bandwidthMbps
+
+
+**Recommendations:**
+- Compare configuration differences with other test scenarios
+- Investigate network conditions specific to this configuration
+- Check for consistent patterns across multiple test runs
+
+
+### medium Severity: latency Anomaly in coredns-mtu1500-logging_enabled
+
+**Description:** Jitter deviation detected: lower than average by 62.71% (0.08 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### low Severity: latency Anomaly in coredns-mtu1500-logging_disabled
+
+**Description:** Jitter deviation detected: lower than average by 48.91% (0.11 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### low Severity: latency Anomaly in coredns-mtu8920-logging_disabled
+
+**Description:** Jitter deviation detected: lower than average by 51.59% (0.10 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### low Severity: latency Anomaly in coredns-mtu1420-logging_disabled
+
+**Description:** Jitter deviation detected: lower than average by 54.58% (0.10 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### high Severity: latency Anomaly in bind9-mtu1500-logging_disabled
+
+**Description:** Jitter deviation detected: higher than average by 288.20% (0.83 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### medium Severity: latency Anomaly in bind9-mtu1420-logging_enabled
+
+**Description:** Jitter deviation detected: lower than average by 81.53% (0.04 ms vs. average 0.21 ms)
+
+**Affected Metrics:**
+- jitterMs
+
+
+**Recommendations:**
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
+
+
+### high Severity: packet_loss Anomaly in coredns-mtu1500-logging_enabled
+
+**Description:** High packet loss detected (88.98%) - above threshold of 1.00%
 
 **Affected Metrics:**
 - packetLoss
@@ -129,9 +331,99 @@ The following performance anomalies were detected during analysis:
 - Consider adjusting MTU settings to reduce fragmentation
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled
+### high Severity: packet_loss Anomaly in coredns-mtu1500-logging_disabled
 
-**Description:** Slow DNS response times detected (152.95 ms) - above threshold of 100 ms
+**Description:** High packet loss detected (110.31%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### high Severity: packet_loss Anomaly in coredns-mtu8920-logging_disabled
+
+**Description:** High packet loss detected (164.25%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### high Severity: packet_loss Anomaly in coredns-mtu1420-logging_disabled
+
+**Description:** High packet loss detected (132.47%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### high Severity: packet_loss Anomaly in bind9-mtu1500-logging_disabled
+
+**Description:** High packet loss detected (117.23%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### high Severity: packet_loss Anomaly in bind9-mtu1420-logging_enabled
+
+**Description:** High packet loss detected (112.17%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### high Severity: packet_loss Anomaly in bind9-mtu8920-logging_disabled
+
+**Description:** High packet loss detected (120.87%) - above threshold of 1.00%
+
+**Affected Metrics:**
+- packetLoss
+- lostPackets
+
+
+**Recommendations:**
+- Check for network congestion or interference
+- Investigate potential hardware issues
+- Consider adjusting MTU settings to reduce fragmentation
+
+
+### low Severity: dns_failure Anomaly in coredns-mtu1500-logging_enabled
+
+**Description:** Slow DNS response times detected (165.70 ms) - above threshold of 100 ms
 
 **Affected Metrics:**
 - responseTimeMs
@@ -144,7 +436,97 @@ The following performance anomalies were detected during analysis:
 - Consider DNS caching or using alternative DNS servers
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in coredns-mtu1500-logging_disabled
+
+**Description:** Slow DNS response times detected (159.07 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in coredns-mtu8920-logging_disabled
+
+**Description:** Slow DNS response times detected (161.07 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in coredns-mtu1420-logging_disabled
+
+**Description:** Slow DNS response times detected (171.92 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in bind9-mtu1500-logging_disabled
+
+**Description:** Slow DNS response times detected (138.61 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in bind9-mtu1420-logging_enabled
+
+**Description:** Slow DNS response times detected (134.27 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in bind9-mtu8920-logging_disabled
+
+**Description:** Slow DNS response times detected (140.03 ms) - above threshold of 100 ms
+
+**Affected Metrics:**
+- responseTimeMs
+- queryTimeMs
+
+
+**Recommendations:**
+- Check DNS server performance and load
+- Investigate network latency to DNS servers
+- Consider DNS caching or using alternative DNS servers
+
+
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "flowise.thepi.es" (184.99 ms)
 
@@ -159,7 +541,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "dockge1.thepi.es" (187.67 ms)
 
@@ -174,7 +556,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "faker.thepi.es" (183.69 ms)
 
@@ -189,7 +571,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "comics.thepi.es" (184.66 ms)
 
@@ -204,7 +586,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "dockge2.thepi.es" (188.61 ms)
 
@@ -219,7 +601,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "aitranslator.thepi.es" (153.78 ms)
 
@@ -234,7 +616,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "n8n.thepi.es" (159.36 ms)
 
@@ -249,7 +631,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "asus.thepi.es" (160.44 ms)
 
@@ -264,7 +646,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "audiobookshelf.thepi.es" (162.93 ms)
 
@@ -279,7 +661,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "audiobookrequest.thepi.es" (158.27 ms)
 
@@ -294,7 +676,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "data-admin.thepi.es" (165.78 ms)
 
@@ -309,7 +691,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "boardgameroom.thepi.es" (155.60 ms)
 
@@ -324,7 +706,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "cameras.thepi.es" (160.80 ms)
 
@@ -339,7 +721,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "comet.thepi.es" (152.80 ms)
 
@@ -354,7 +736,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "cloud.thepi.es" (155.24 ms)
 
@@ -369,7 +751,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "downloader.thepi.es" (150.98 ms)
 
@@ -384,7 +766,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "files.thepi.es" (153.57 ms)
 
@@ -399,7 +781,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "mediaflow.thepi.es" (155.07 ms)
 
@@ -414,7 +796,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "mosquitto.thepi.es" (156.97 ms)
 
@@ -429,7 +811,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "okta.thepi.es" (153.50 ms)
 
@@ -444,7 +826,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "pdf.thepi.es" (158.36 ms)
 
@@ -459,7 +841,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "pomodoro.thepi.es" (167.41 ms)
 
@@ -474,7 +856,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "pong.thepi.es" (154.31 ms)
 
@@ -489,7 +871,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "router.thepi.es" (152.93 ms)
 
@@ -504,7 +886,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "stremthru.thepi.es" (165.61 ms)
 
@@ -519,7 +901,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "stremio-jackett.thepi.es" (150.76 ms)
 
@@ -534,7 +916,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "url.thepi.es" (158.88 ms)
 
@@ -549,7 +931,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "warp.thepi.es" (155.26 ms)
 
@@ -564,7 +946,7 @@ The following performance anomalies were detected during analysis:
 - Verify if the domain has multiple DNS lookups in its resolution chain
 
 
-### low Severity: dns_failure Anomaly in dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled, dataset-mtu1500-logging_disabled
+### low Severity: dns_failure Anomaly in All Configurations
 
 **Description:** Consistently slow DNS resolution for domain "zurg.thepi.es" (150.77 ms)
 
@@ -590,6 +972,9 @@ Based on the comprehensive analysis of network performance across configurations
 - Smaller MTU (1420) shows lower latency (79.9% improvement) which may benefit real-time applications.
 - Enabling DNS query logging appears to improve network performance by approximately 7.1%.
 - This is unexpected and may indicate other factors affecting the test results.
+- Compare network paths between different configurations
+- Check for consistent patterns across multiple test runs
+- Investigate potential interference specific to this configuration
 - Check for network congestion or interference
 - Investigate potential hardware issues
 - Consider adjusting MTU settings to reduce fragmentation
@@ -600,4 +985,4 @@ Based on the comprehensive analysis of network performance across configurations
 
 ---
 
-*Report generated by Network Performance Analyzer on 2025-07-18T17:44:39.528Z*
+*Report generated by Network Performance Analyzer on 2025-07-20T04:29:24.704Z*

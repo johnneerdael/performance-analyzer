@@ -169,6 +169,36 @@ export declare class DefaultReportGenerator implements ReportGenerator {
      * @returns The recommendations section as a markdown string
      */
     private generateRecommendationsSection;
+    /**
+     * Generate advanced analysis tables for detailed performance metrics
+     * @param analysis The analysis results
+     * @returns The advanced analysis tables as a markdown string
+     */
+    private generateAdvancedAnalysisTables;
+    /**
+     * Generate a detailed bandwidth analysis table
+     * @param metrics The bandwidth metrics to analyze
+     * @returns The detailed bandwidth analysis as a markdown string
+     */
+    private generateDetailedBandwidthAnalysis;
+    /**
+     * Generate a jitter analysis table
+     * @param metrics The latency metrics to analyze
+     * @returns The jitter analysis as a markdown string
+     */
+    private generateJitterAnalysis;
+    /**
+     * Generate a retransmission analysis table
+     * @param metrics The reliability metrics to analyze
+     * @returns The retransmission analysis as a markdown string
+     */
+    private generateRetransmissionAnalysis;
+    /**
+     * Generate a performance correlation matrix
+     * @param analysis The analysis results
+     * @returns The performance correlation matrix as a markdown string
+     */
+    private generatePerformanceCorrelationMatrix;
 }
 export { ReportGenerator };
 //# sourceMappingURL=ReportGenerator.d.ts.map

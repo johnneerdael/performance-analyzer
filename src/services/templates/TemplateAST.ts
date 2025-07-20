@@ -1,484 +1,219 @@
-/**
- * Template AST interfaces for structured template representation
- */
+// Template AST (Abstract Syntax Tree) for structured template representation
+import { TemplateNode } from './TemplateNode';
 
 /**
- * Base interface for all AST nodes
+ * Interface for Template AST (Abstract Syntax Tree)
+ * Represents the parsed structure of a template
  */
-export interface TemplateASTNode {
+export interface TemplateAST {
   /**
-   * Type of the node
+   * Root node of the AST
    */
-  type: TemplateNodeType;
+  root: TemplateNode;
   
   /**
-   * Source location information
-   */
-  location?: SourceLocation;
-}
-
-/**
- * Types of template nodes
- */
-export enum TemplateNodeType {
-  ROOT = 'root',
-  TEXT = 'text',
-  VARIABLE = 'variable',
-  EACH = 'each',
-  IF = 'if',
-  HELPER = 'helper',
-  COMMENT = 'comment'
-}
-
-/**
- * Source location information for error reporting
- */
-export interface SourceLocation {
-  /**
-   * Start position in the source template
-   */
-  start: number;
-  
-  /**
-   * End position in the source template
-   */
-  end: number;
-  
-  /**
-   * Line number (1-based)
-   */
-  line: number;
-  
-  /**
-   * Column number (1-based)
-   */
-  column: number;
-}
-
-/**
- * Root node of the template AST
- */
-export interface RootNode extends TemplateASTNode {
-  type: TemplateNodeType.ROOT;
-  
-  /**
-   * Child nodes
-   */
-  children: TemplateASTNode[];
-}
-
-/**
- * Text node representing static text content
- */
-export interface TextNode extends TemplateASTNode {
-  type: TemplateNodeType.TEXT;
-  
-  /**
-   * Text content
-   */
-  content: string;
-}
-
-/**
- * Variable node representing a variable placeholder
- */
-export interface VariableNode extends TemplateASTNode {
-  type: TemplateNodeType.VARIABLE;
-  
-  /**
-   * Variable path (e.g., "user.name", "items.0.id")
-   */
-  path: string;
-  
-  /**
-   * Original expression including braces (e.g., "{{user.name}}")
-   */
-  original: string;
-}
-
-/**
- * Each node representing a loop block
- */
-export interface EachNode extends TemplateASTNode {
-  type: TemplateNodeType.EACH;
-  
-  /**
-   * Array path to iterate over
-   */
-  items: string;
-  
-  /**
-   * Optional variable name for the current item (defaults to "this")
-   */
-  item?: string;
-  
-  /**
-   * Optional variable name for the current index
-   */
-  index?: string;
-  
-  /**
-   * Child nodes within the each block
-   */
-  children: TemplateASTNode[];
-  
-  /**
-   * Original expression including braces (e.g., "{{#each items}}")
-   */
-  original: string;
-}
-
-/**
- * If node representing a conditional block
- */
-export interface IfNode extends TemplateASTNode {
-  type: TemplateNodeType.IF;
-  
-  /**
-   * Condition expression
-   */
-  condition: string;
-  
-  /**
-   * Child nodes for the true branch
-   */
-  children: TemplateASTNode[];
-  
-  /**
-   * Child nodes for the false branch (else block)
-   */
-  else?: TemplateASTNode[];
-  
-  /**
-   * Original expression including braces (e.g., "{{#if condition}}")
-   */
-  original: string;
-}
-
-/**
- * Helper node representing a helper function call
- */
-export interface HelperNode extends TemplateASTNode {
-  type: TemplateNodeType.HELPER;
-  
-  /**
-   * Helper name
-   */
-  name: string;
-  
-  /**
-   * Helper arguments
-   */
-  args: string[];
-  
-  /**
-   * Child nodes within the helper block (for block helpers)
-   */
-  children?: TemplateASTNode[];
-  
-  /**
-   * Original expression including braces (e.g., "{{formatDate date 'YYYY-MM-DD'}}")
-   */
-  original: string;
-}
-
-/**
- * Comment node representing a comment in the template
- */
-export interface CommentNode extends TemplateASTNode {
-  type: TemplateNodeType.COMMENT;
-  
-  /**
-   * Comment content
-   */
-  content: string;
-  
-  /**
-   * Original expression including braces (e.g., "{{!-- comment --}}")
-   */
-  original: string;
-}
-
-/**
- * Type guard for RootNode
- */
-export function isRootNode(node: TemplateASTNode): node is RootNode {
-  return node.type === TemplateNodeType.ROOT;
-}
-
-/**
- * Type guard for TextNode
- */
-export function isTextNode(node: TemplateASTNode): node is TextNode {
-  return node.type === TemplateNodeType.TEXT;
-}
-
-/**
- * Type guard for VariableNode
- */
-export function isVariableNode(node: TemplateASTNode): node is VariableNode {
-  return node.type === TemplateNodeType.VARIABLE;
-}
-
-/**
- * Type guard for EachNode
- */
-export function isEachNode(node: TemplateASTNode): node is EachNode {
-  return node.type === TemplateNodeType.EACH;
-}
-
-/**
- * Type guard for IfNode
- */
-export function isIfNode(node: TemplateASTNode): node is IfNode {
-  return node.type === TemplateNodeType.IF;
-}
-
-/**
- * Type guard for HelperNode
- */
-export function isHelperNode(node: TemplateASTNode): node is HelperNode {
-  return node.type === TemplateNodeType.HELPER;
-}
-
-/**
- * Type guard for CommentNode
- */
-export function isCommentNode(node: TemplateASTNode): node is CommentNode {
-  return node.type === TemplateNodeType.COMMENT;
-}
-
-/**
- * Create a root node
- */
-export function createRootNode(children: TemplateASTNode[] = []): RootNode {
-  return {
-    type: TemplateNodeType.ROOT,
-    children
-  };
-}
-
-/**
- * Create a text node
- */
-export function createTextNode(content: string, location?: SourceLocation): TextNode {
-  return {
-    type: TemplateNodeType.TEXT,
-    content,
-    location
-  };
-}
-
-/**
- * Create a variable node
- */
-export function createVariableNode(path: string, original: string, location?: SourceLocation): VariableNode {
-  return {
-    type: TemplateNodeType.VARIABLE,
-    path,
-    original,
-    location
-  };
-}
-
-/**
- * Create an each node
- */
-export function createEachNode(
-  items: string,
-  children: TemplateASTNode[] = [],
-  original: string,
-  item?: string,
-  index?: string,
-  location?: SourceLocation
-): EachNode {
-  return {
-    type: TemplateNodeType.EACH,
-    items,
-    item,
-    index,
-    children,
-    original,
-    location
-  };
-}
-
-/**
- * Create an if node
- */
-export function createIfNode(
-  condition: string,
-  children: TemplateASTNode[] = [],
-  original: string,
-  elseChildren?: TemplateASTNode[],
-  location?: SourceLocation
-): IfNode {
-  return {
-    type: TemplateNodeType.IF,
-    condition,
-    children,
-    else: elseChildren,
-    original,
-    location
-  };
-}
-
-/**
- * Create a helper node
- */
-export function createHelperNode(
-  name: string,
-  args: string[] = [],
-  original: string,
-  children?: TemplateASTNode[],
-  location?: SourceLocation
-): HelperNode {
-  return {
-    type: TemplateNodeType.HELPER,
-    name,
-    args,
-    children,
-    original,
-    location
-  };
-}
-
-/**
- * Create a comment node
- */
-export function createCommentNode(content: string, original: string, location?: SourceLocation): CommentNode {
-  return {
-    type: TemplateNodeType.COMMENT,
-    content,
-    original,
-    location
-  };
-}
-
-/**
- * Template AST interface - represents the entire AST
- * Note: This is a simplified version that directly extends RootNode
- * to maintain compatibility with existing code
- */
-export interface TemplateAST extends RootNode {
-  /**
-   * Original template string
+   * Source template string
    */
   source: string;
-}
-
-/**
- * Create a template AST
- */
-export function createTemplateAST(children: TemplateASTNode[] = [], source: string = ''): TemplateAST {
-  return {
-    type: TemplateNodeType.ROOT,
-    children,
-    source
+  
+  /**
+   * Metadata about the template
+   */
+  metadata?: {
+    /**
+     * Template name or identifier
+     */
+    name?: string;
+    
+    /**
+     * Template version
+     */
+    version?: string;
+    
+    /**
+     * Template author
+     */
+    author?: string;
+    
+    /**
+     * Template description
+     */
+    description?: string;
   };
 }
 
 /**
- * Validation result for template validation
+ * Create a new Template AST
+ * @param root Root node of the AST
+ * @param source Source template string
+ * @param metadata Metadata about the template
+ * @returns A new Template AST
  */
-export interface ValidationResult {
-  /**
-   * Whether the template is valid
-   */
-  isValid: boolean;
-  
-  /**
-   * Errors found during validation
-   */
-  errors: TemplateError[];
-  
-  /**
-   * Warnings found during validation
-   */
-  warnings: TemplateWarning[];
+export function createTemplateAST(
+  root: TemplateNode,
+  source: string,
+  metadata?: TemplateAST['metadata']
+): TemplateAST {
+  return {
+    root,
+    source,
+    metadata
+  };
 }
 
 /**
- * Template error
+ * Check if an object is a valid Template AST
+ * @param obj Object to check
+ * @returns True if the object is a valid Template AST
  */
-export interface TemplateError {
-  /**
-   * Error type
-   */
-  type: 'syntax' | 'runtime' | 'data';
-  
-  /**
-   * Error message
-   */
-  message: string;
-  
-  /**
-   * Line number where the error occurred
-   */
-  line?: number;
-  
-  /**
-   * Column number where the error occurred
-   */
-  column?: number;
-  
-  /**
-   * Context around the error
-   */
-  context?: string;
+export function isTemplateAST(obj: any): obj is TemplateAST {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    obj.root &&
+    typeof obj.source === 'string'
+  );
 }
 
 /**
- * Template warning
+ * Clone a Template AST
+ * @param ast Template AST to clone
+ * @returns A deep copy of the Template AST
  */
-export interface TemplateWarning {
-  /**
-   * Warning type
-   */
-  type: 'performance' | 'deprecated' | 'best-practice';
-  
-  /**
-   * Warning message
-   */
-  message: string;
-  
-  /**
-   * Suggestion for fixing the warning
-   */
-  suggestion?: string;
+export function cloneTemplateAST(ast: TemplateAST): TemplateAST {
+  return JSON.parse(JSON.stringify(ast));
 }
 
 /**
- * Token for lexical analysis
+ * Get a string representation of a Template AST
+ * @param ast Template AST to stringify
+ * @returns A string representation of the Template AST
  */
-export interface Token {
-  /**
-   * Token type
-   */
-  type: 'text' | 'expression' | 'block-start' | 'block-end' | 'comment';
+export function stringifyTemplateAST(ast: TemplateAST): string {
+  return JSON.stringify(ast, null, 2);
+}
+
+/**
+ * Parse a string representation of a Template AST
+ * @param str String representation of a Template AST
+ * @returns The parsed Template AST
+ */
+export function parseTemplateAST(str: string): TemplateAST {
+  return JSON.parse(str);
+}
+
+/**
+ * Get the source template string from a Template AST
+ * @param ast Template AST
+ * @returns The source template string
+ */
+export function getTemplateSource(ast: TemplateAST): string {
+  return ast.source;
+}
+
+/**
+ * Get the root node of a Template AST
+ * @param ast Template AST
+ * @returns The root node
+ */
+export function getTemplateRoot(ast: TemplateAST): TemplateNode {
+  return ast.root;
+}
+
+/**
+ * Get the metadata of a Template AST
+ * @param ast Template AST
+ * @returns The metadata
+ */
+export function getTemplateMetadata(ast: TemplateAST): TemplateAST['metadata'] {
+  return ast.metadata;
+}
+
+/**
+ * Set the metadata of a Template AST
+ * @param ast Template AST
+ * @param metadata Metadata to set
+ * @returns The updated Template AST
+ */
+export function setTemplateMetadata(
+  ast: TemplateAST,
+  metadata: TemplateAST['metadata']
+): TemplateAST {
+  return {
+    ...ast,
+    metadata
+  };
+}
+
+/**
+ * Update the metadata of a Template AST
+ * @param ast Template AST
+ * @param metadata Metadata to update
+ * @returns The updated Template AST
+ */
+export function updateTemplateMetadata(
+  ast: TemplateAST,
+  metadata: Partial<NonNullable<TemplateAST['metadata']>>
+): TemplateAST {
+  return {
+    ...ast,
+    metadata: {
+      ...ast.metadata,
+      ...metadata
+    }
+  };
+}
+
+/**
+ * Transform a Template AST using a visitor pattern
+ * @param ast Template AST to transform
+ * @param visitor Visitor function to apply to each node
+ * @returns The transformed Template AST
+ */
+export function transformTemplateAST(
+  ast: TemplateAST,
+  visitor: (node: TemplateNode) => TemplateNode
+): TemplateAST {
+  function transform(node: TemplateNode): TemplateNode {
+    // Apply visitor to this node
+    const transformedNode = visitor(node);
+    
+    // Transform children if they exist
+    if (transformedNode.children && transformedNode.children.length > 0) {
+      transformedNode.children = transformedNode.children.map(transform);
+    }
+    
+    return transformedNode;
+  }
   
-  /**
-   * Token value
-   */
-  value: string;
+  return {
+    ...ast,
+    root: transform(ast.root)
+  };
+}
+
+/**
+ * Validate a Template AST
+ * @param ast Template AST to validate
+ * @returns True if the AST is valid
+ */
+export function validateTemplateAST(ast: TemplateAST): boolean {
+  // Check if the AST is a valid object
+  if (!isTemplateAST(ast)) {
+    return false;
+  }
   
-  /**
-   * Start position in the source
-   */
-  start: number;
+  // Check if the root node is valid
+  if (!ast.root) {
+    return false;
+  }
   
-  /**
-   * End position in the source
-   */
-  end: number;
+  // Check if the source is a string
+  if (typeof ast.source !== 'string') {
+    return false;
+  }
   
-  /**
-   * Line number
-   */
-  line: number;
+  // Additional validation can be added here
   
-  /**
-   * Column number
-   */
-  column: number;
+  return true;
 }

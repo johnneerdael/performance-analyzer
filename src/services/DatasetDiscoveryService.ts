@@ -120,7 +120,7 @@ export class DefaultDatasetDiscoveryService implements DatasetDiscoveryService {
         
         // Create dataset object
         const dataset: Dataset = {
-          name: `dataset-${timestamp}`,
+          name: descriptiveName,  // Use descriptive name here instead of dataset-timestamp
           displayName: descriptiveName,
           parametersFile: fileGroup.parametersFile ? path.join(rootPath, fileGroup.parametersFile) : '',
           resultsFile: path.join(rootPath, fileGroup.resultsFile),

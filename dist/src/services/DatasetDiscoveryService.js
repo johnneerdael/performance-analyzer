@@ -114,7 +114,7 @@ class DefaultDatasetDiscoveryService {
                 const descriptiveName = this.generateDescriptiveConfigName(configInfo);
                 // Create dataset object
                 const dataset = {
-                    name: `dataset-${timestamp}`,
+                    name: descriptiveName, // Use descriptive name here instead of dataset-timestamp
                     displayName: descriptiveName,
                     parametersFile: fileGroup.parametersFile ? path_1.default.join(rootPath, fileGroup.parametersFile) : '',
                     resultsFile: path_1.default.join(rootPath, fileGroup.resultsFile),
